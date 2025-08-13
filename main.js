@@ -4,7 +4,6 @@ import { render } from './render.js';
 import { setupUI, setTool, applyActionAt } from './ui.js';
 import { sprites } from './sprites.js';
 import { initHUD, updateHUD } from './hud.js';
-import { initSidebar } from './sidebar.js';
 import { initMinimap, updateMinimap } from './minimap.js';
 import { initMainMenu } from './src/ui/mainMenu.js';
 import { loadSettings, saveSettings } from './src/state/persistence.js';
@@ -565,7 +564,6 @@ const TOOL = { INSPECT:'inspect', ADD_HERB:'add_herb', ADD_CARN:'add_carn', ERAS
 
 // Toolbar DOM
 const toolbar = document.getElementById('toolbar');
-const sidebar = document.getElementById('sidebar');
 
 // Atajos y entrada gestionados en ui.js
 
@@ -636,7 +634,7 @@ state = {
   nearestOfSpecies, moveCreature, clampInside,
   eatPlant, reproduce, dist2, daylightFactor,
   triggerFireCenter, strikeMeteor, plague,
-  toolbar, sidebar, cvs, ctx,
+  toolbar, cvs, ctx,
   camX, camY, scale, DPR,
   applyCamera(){ camX = state.camX; camY = state.camY; resizeCanvas(); },
   minimap:null,
@@ -659,7 +657,6 @@ state.settings = Object.assign({}, settings, {
   reproThresholdMul,
   mortalityMul
 });
-state.settings.sidebar = state.settings.sidebar || {};
 
 // persist settings when leaving the page
 window.addEventListener('beforeunload', () => saveSettings(state.settings));
@@ -704,7 +701,6 @@ function loop(now){
 initMainMenu(state);
 setupUI(state);
 initHUD(state);
-initSidebar(state);
 initMinimap(state);
 generateTerrain();                 // Crea el mapa base
 generateSoilMoisture();            // Inicializa humedad del suelo
