@@ -1,4 +1,5 @@
 import { initRadialMenu } from './src/ui/radialMenu.js';
+import { saveSettings } from './src/state/persistence.js';
 
 export function setTool(state, t){
   state.activeTool = t;
@@ -118,11 +119,42 @@ export function setupUI(state){
       const sRate = row.querySelector('.spawnRate');
       const rMul = row.querySelector('.reproThresholdMul');
       const mMul = row.querySelector('.mortalityMul');
-      if (spawnT) spawnT.addEventListener('change',()=> state.spawnEnabled[sp] = spawnT.checked);
-      if (visT) visT.addEventListener('change',()=> state.hiddenSpecies[sp] = !visT.checked);
-      if (sRate) sRate.addEventListener('input',()=> state.spawnRate[sp] = parseFloat(sRate.value));
-      if (rMul) rMul.addEventListener('input',()=> state.reproThresholdMul[sp] = parseFloat(rMul.value));
-      if (mMul) mMul.addEventListener('input',()=> state.mortalityMul[sp] = parseFloat(mMul.value));
+
+      if (spawnT){
+        spawnT.checked = state.spawnEnabled[sp];
+        spawnT.addEventListener('change',()=>{
+          state.spawnEnabled[sp] = spawnT.checked;
+          saveSettings(state.settings);
+        });
+      }
+      if (visT){
+        visT.checked = !state.hiddenSpecies[sp];
+        visT.addEventListener('change',()=>{
+          state.hiddenSpecies[sp] = !visT.checked;
+          saveSettings(state.settings);
+        });
+      }
+      if (sRate){
+        sRate.value = state.spawnRate[sp];
+        sRate.addEventListener('input',()=>{
+          state.spawnRate[sp] = parseFloat(sRate.value);
+          saveSettings(state.settings);
+        });
+      }
+      if (rMul){
+        rMul.value = state.reproThresholdMul[sp];
+        rMul.addEventListener('input',()=>{
+          state.reproThresholdMul[sp] = parseFloat(rMul.value);
+          saveSettings(state.settings);
+        });
+      }
+      if (mMul){
+        mMul.value = state.mortalityMul[sp];
+        mMul.addEventListener('input',()=>{
+          state.mortalityMul[sp] = parseFloat(mMul.value);
+          saveSettings(state.settings);
+        });
+      }
     });
   }
 }
