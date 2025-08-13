@@ -29,6 +29,7 @@ header { position:fixed; top:10px; left:50%; transform:translateX(-50%); z-index
 #debugPanel { margin-top:8px; background:rgba(0,0,0,0.6); padding:6px 10px; border-radius:8px; display:flex; gap:10px; font-size:12px; transition:box-shadow .3s, background .3s, transform .3s; animation:panelFade .6s ease-out; }
   .hidden { display:none; }
 #speciesPanel { margin-top:8px; background:rgba(0,0,0,0.6); padding:6px 10px; border-radius:8px; display:flex; flex-direction:column; gap:4px; font-size:12px; transition:box-shadow .3s, background .3s, transform .3s; animation:panelFade .6s ease-out; }
+#speciesPanel.hidden { display:none; }
 #speciesPanel .sp { display:flex; align-items:center; gap:4px; }
 #speciesPanel .icon { width:16px; }
 
