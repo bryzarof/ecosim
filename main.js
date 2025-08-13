@@ -188,22 +188,18 @@ const cvs = document.getElementById('sim');
 const ctx = cvs.getContext('2d', { alpha:false });
 
 function resizeCanvas() {
-  // Calcula escala para ajustar la simulación al tamaño de la ventana
   const worldPxW = WORLD_W * TILE;
   const worldPxH = WORLD_H * TILE;
+
+  // Tamaño real del canvas acorde a la ventana y densidad de píxeles
+  cvs.width = Math.floor(window.innerWidth * DPR);
+  cvs.height = Math.floor(window.innerHeight * DPR);
+
+  // Escala para ajustar el mundo al tamaño visible
   const scale = Math.min(window.innerWidth / worldPxW, window.innerHeight / worldPxH);
 
-  // Ajusta el tamaño visible del lienzo respetando la relación de aspecto
-  const cssW = worldPxW * scale;
-  const cssH = worldPxH * scale;
-  cvs.style.width = cssW + 'px';
-  cvs.style.height = cssH + 'px';
-
-  // Mantiene el buffer interno a resolución completa para nitidez y escala vía CSS
-  cvs.width = Math.floor(worldPxW * DPR);
-  cvs.height = Math.floor(worldPxH * DPR);
   ctx.imageSmoothingEnabled = false;           // Look pixel-art
-  ctx.setTransform(DPR, 0, 0, DPR, 0, 0);      // 1 unidad lógica = 1 px del mundo
+  ctx.setTransform(scale * DPR, 0, 0, scale * DPR, 0, 0);
 }
 resizeCanvas();
 window.addEventListener('resize', resizeCanvas);
