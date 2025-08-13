@@ -6,6 +6,7 @@ import { sprites } from './sprites.js';
 import { initHUD, updateHUD } from './hud.js';
 import { initSidebar } from './sidebar.js';
 import { initMinimap, updateMinimap } from './minimap.js';
+import { initMainMenu } from './src/ui/mainMenu.js';
 let state;
 // ==============================================================
 //                    PARÁMETROS DEL MUNDO
@@ -669,6 +670,7 @@ function loop(now){
 // ==============================================================
 //                           INIT
 // ==============================================================
+initMainMenu(state);
 setupUI(state);
 initHUD(state);
 initSidebar(state);
