@@ -7,6 +7,7 @@ import { initHUD, updateHUD } from './hud.js';
 import { initSidebar } from './sidebar.js';
 import { initMinimap, updateMinimap } from './minimap.js';
 import { initMainMenu } from './src/ui/mainMenu.js';
+import { gsap } from 'gsap';
 let state;
 // ==============================================================
 //                    PARÁMETROS DEL MUNDO
@@ -681,6 +682,11 @@ spawnAnimals();                    // Población inicial
 state.weatherTimer = 0; advanceWeather(0.01); // Forzar selección de clima inicial
 setTool(state, TOOL.INSPECT);            // Herramienta por defecto
 requestAnimationFrame((t)=>{ last=t; loop(t); }); // Arranque del bucle
+
+// Animaciones de iconos de eventos
+gsap.to('#evtFire', { rotation:-10, yoyo:true, repeat:-1, duration:0.6, transformOrigin:'50% 80%' });
+gsap.to('#evtMeteor', { y:-4, yoyo:true, repeat:-1, duration:0.8 });
+gsap.to('#evtPlagueH, #evtPlagueC', { scale:1.1, yoyo:true, repeat:-1, duration:1 });
 
 // ==============================================================
 //                       SELF-TESTS (sanidad)
