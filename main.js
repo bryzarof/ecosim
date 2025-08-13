@@ -8,6 +8,7 @@ import { initMinimap, updateMinimap } from './minimap.js';
 import { initMainMenu } from './src/ui/mainMenu.js';
 import { loadSettings, saveSettings } from './src/state/persistence.js';
 import { gsap } from 'https://cdn.jsdelivr.net/npm/gsap@3.13.0/index.js';
+const IS_DEV = process.env.NODE_ENV !== 'production';
 let state;
 // ==============================================================
 //                    PARÁMETROS DEL MUNDO
@@ -806,5 +807,5 @@ function runSelfTests(){
   tests.forEach(t=>console[t.pass? 'log': 'error'](`${t.pass?'✔':'✖'} ${t.name}${t.info? ' — '+t.info:''}`));
   console.groupEnd();
 }
-runSelfTests();
+if (IS_DEV) runSelfTests();
 
