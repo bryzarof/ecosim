@@ -209,7 +209,7 @@ if (!ctx) {
   throw new Error('Unable to acquire 2D context for canvas');
 }
 
-let camX = 0, camY = 0, scale = 1;
+let camX = 0, camY = 0, scaleX = 1, scaleY = 1;
 
 function resizeCanvas() {
   const worldPxW = WORLD_W * TILE;
@@ -220,11 +220,12 @@ function resizeCanvas() {
   cvs.height = Math.floor(window.innerHeight * DPR);
 
   // Escala para ajustar el mundo al tamaño visible
-  scale = Math.min(window.innerWidth / worldPxW, window.innerHeight / worldPxH);
+  scaleX = window.innerWidth / worldPxW;
+  scaleY = window.innerHeight / worldPxH;
 
   ctx.imageSmoothingEnabled = false;           // Look pixel-art
-  ctx.setTransform(scale * DPR, 0, 0, scale * DPR, -camX * TILE * scale * DPR, -camY * TILE * scale * DPR);
-  if (state) state.scale = scale;
+  ctx.setTransform(scaleX * DPR, 0, 0, scaleY * DPR, -camX * TILE * scaleX * DPR, -camY * TILE * scaleY * DPR);
+  if (state) { state.scaleX = scaleX; state.scaleY = scaleY; }
 }
 resizeCanvas();
 window.addEventListener('resize', resizeCanvas);
@@ -646,8 +647,14 @@ state = {
   eatPlant, reproduce, dist2, daylightFactor,
   triggerFireCenter, strikeMeteor, plague,
   toolbar, cvs, ctx,
-  camX, camY, scale, DPR,
-  applyCamera(){ camX = state.camX; camY = state.camY; resizeCanvas(); },
+  camX, camY, scaleX, scaleY, DPR,
+  applyCamera(){
+    camX = state.camX;
+    camY = state.camY;
+    scaleX = state.scaleX;
+    scaleY = state.scaleY;
+    ctx.setTransform(scaleX * DPR, 0, 0, scaleY * DPR, -camX * TILE * scaleX * DPR, -camY * TILE * scaleY * DPR);
+  },
   minimap:null,
   sprites,
   crowdSmall, crowdMedium, crowdLarge,

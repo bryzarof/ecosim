@@ -11,8 +11,8 @@ export function initMinimap(state){
     const rect = cvs.getBoundingClientRect();
     const mx = (e.clientX - rect.left) / rect.width * state.WORLD_W;
     const my = (e.clientY - rect.top) / rect.height * state.WORLD_H;
-    const viewW = window.innerWidth / (state.TILE * state.scale);
-    const viewH = window.innerHeight / (state.TILE * state.scale);
+    const viewW = window.innerWidth / (state.TILE * state.scaleX);
+    const viewH = window.innerHeight / (state.TILE * state.scaleY);
     state.camX = Math.max(0, Math.min(state.WORLD_W - viewW, mx - viewW/2));
     state.camY = Math.max(0, Math.min(state.WORLD_H - viewH, my - viewH/2));
     if (state.applyCamera) state.applyCamera();
