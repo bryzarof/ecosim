@@ -1,3 +1,5 @@
+import { initRadialMenu } from './src/ui/radialMenu.js';
+
 export function setTool(state, t){
   state.activeTool = t;
   for (const btn of state.toolbar.querySelectorAll('button[data-tool]'))
@@ -71,7 +73,8 @@ function nearestAnimalTo(state,x,y,maxR){
 }
 
 export function setupUI(state){
-  state.toolbar.querySelectorAll('button[data-tool]').forEach(btn=>{
+  const toolButtons = Array.from(state.toolbar.querySelectorAll('button[data-tool]'));
+  toolButtons.forEach(btn=>{
     btn.addEventListener('click', ()=> setTool(state, btn.dataset.tool));
   });
 
@@ -82,9 +85,10 @@ export function setupUI(state){
   state.cvs.addEventListener('click', e=>{ if(!dragging) handleAt(state,e); });
 
   window.addEventListener('keydown', (e)=>{
-    const map = { '1':'inspect','2':'add_herb','3':'eraser','4':'food','5':'water','6':'barrier' };
-    if(map[e.key]) setTool(state, map[e.key]);
-    else if(e.key==='f' || e.key==='F') state.triggerFireCenter();
+    const num = parseInt(e.key,10);
+    if(num>=1 && num<=toolButtons.length){
+      setTool(state, toolButtons[num-1].dataset.tool);
+    } else if(e.key==='f' || e.key==='F') state.triggerFireCenter();
     else if(e.key==='m' || e.key==='M') state.strikeMeteor();
     else if(e.key==='p' || e.key==='P') state.plague('HERB',0.35);
     else if(e.key==='o' || e.key==='O') state.plague('CARN',0.5);
@@ -94,6 +98,16 @@ export function setupUI(state){
   document.getElementById('evtMeteor').addEventListener('click', state.strikeMeteor);
   document.getElementById('evtPlagueH').addEventListener('click', ()=> state.plague('HERB',0.35));
   document.getElementById('evtPlagueC').addEventListener('click', ()=> state.plague('CARN',0.5));
+
+  const radialRoot = document.getElementById('radialMenu');
+  if(radialRoot){
+    initRadialMenu(radialRoot,[
+      { label:'\uD83D\uDD0D', onSelect:()=> setTool(state, state.TOOL.INSPECT) },
+      { label:'\uD83D\uDC07', onSelect:()=> setTool(state, state.TOOL.ADD_HERB) },
+      { label:'\uD83E\uDD8A', onSelect:()=> setTool(state, state.TOOL.ADD_CARN) },
+      { label:'\uD83C\uDF3F', onSelect:()=> setTool(state, state.TOOL.FOOD) }
+    ]);
+  }
 
   const panel = document.getElementById('speciesPanel');
   if (panel){
