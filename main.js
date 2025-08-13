@@ -199,12 +199,16 @@ const clamp = (v, a, b)=> Math.max(a, Math.min(b, v)); // Limita v al rango [a,b
 // ==============================================================
 //                         CANVAS SETUP
 // ==============================================================
-const cvs = document.getElementById('sim');
-if (!cvs) {
+const cvs = /** @type {HTMLCanvasElement|null} */ (document.getElementById('sim'));
+if (!(cvs instanceof HTMLCanvasElement)) {
   console.error('Canvas element with id "sim" not found');
   throw new Error('Canvas element with id "sim" not found');
 }
 const ctx = cvs.getContext('2d', { alpha:false });
+if (!ctx) {
+  console.error('Failed to get 2D context from canvas');
+  throw new Error('Unable to acquire 2D context for canvas');
+}
 
 let camX = 0, camY = 0, scale = 1;
 
