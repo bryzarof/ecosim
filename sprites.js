@@ -96,6 +96,42 @@ function carnFrame(offset){
   });
 }
 
+function rodentFrame(offset){
+  return makeCanvas(16,16,(ctx)=>{
+    ctx.fillStyle = '#a3a3a3';
+    ctx.beginPath();
+    ctx.arc(8,8,4,0,Math.PI*2);
+    ctx.fill();
+    ctx.fillStyle = '#525252';
+    ctx.fillRect(4+offset,12,2,2);
+    ctx.fillRect(10-offset,12,2,2);
+  });
+}
+
+function wolfFrame(offset){
+  return makeCanvas(16,16,(ctx)=>{
+    ctx.fillStyle = '#9ca3af';
+    ctx.beginPath();
+    ctx.arc(8,8,5,0,Math.PI*2);
+    ctx.fill();
+    ctx.fillStyle = '#4b5563';
+    ctx.fillRect(4+offset,12,3,3);
+    ctx.fillRect(9-offset,12,3,3);
+  });
+}
+
+function pollinatorFrame(offset){
+  return makeCanvas(16,16,(ctx)=>{
+    ctx.fillStyle = '#c084fc';
+    ctx.beginPath();
+    ctx.arc(8,8,3,0,Math.PI*2);
+    ctx.fill();
+    ctx.fillStyle = '#9333ea';
+    ctx.fillRect(4+offset,12,2,2);
+    ctx.fillRect(10-offset,12,2,2);
+  });
+}
+
 export const sprites = {
   terrain: {
     water: texWater(),
@@ -105,5 +141,8 @@ export const sprites = {
   },
   plant: makePlant(),
   herb: [herbFrame(0), herbFrame(2)],
-  carn: [carnFrame(0), carnFrame(2)]
+  carn: [carnFrame(0), carnFrame(2)],
+  rodent: [rodentFrame(0), rodentFrame(2)],
+  wolf: [wolfFrame(0), wolfFrame(2)],
+  pollinator: [pollinatorFrame(0), pollinatorFrame(2)]
 };
