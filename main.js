@@ -35,8 +35,10 @@ const COLORS = {
 // Campos escalares del mundo:
 // - plant: densidad de vegetación 0..1 por tile
 // - terrain: tipo de bioma por tile
+// - soilMoisture: humedad del suelo 0..1 por tile
 const plant = new Float32Array(WORLD_W * WORLD_H);
 const terrain = new Uint8Array(WORLD_W * WORLD_H);
+const soilMoisture = new Float32Array(WORLD_W * WORLD_H);
 
 // Configuración de especies y poblaciones iniciales
 // Cada especie define parámetros básicos y dieta de recursos o presas
@@ -236,6 +238,15 @@ function generateTerrain() {
   }
 }
 
+function generateSoilMoisture() {
+  const rng = seededRandom(4242);
+  const n1 = valueNoise2D(WORLD_W, WORLD_H, 8, rng);
+  const n2 = valueNoise2D(WORLD_W, WORLD_H, 4, rng);
+  for (let i = 0; i < soilMoisture.length; i++) {
+    soilMoisture[i] = clamp(n1[i] * 0.7 + n2[i] * 0.3, 0, 1);
+  }
+}
+
 // ==============================================================
 //                    TIEMPO DEL MUNDO Y CLIMA
 // ==============================================================
@@ -333,6 +344,14 @@ function growPlants(){
   for(let y=0; y<WORLD_H; y++){
     for(let x=0; x<WORLD_W; x++){
       const id = idx(x,y);
+
+      // Actualiza humedad del suelo
+      let m = soilMoisture[id];
+      if (weatherState===WEATHER.RAIN) m += 0.04;
+      if (weatherState===WEATHER.DROUGHT) m -= 0.03;
+      m -= 0.005; // evaporación base
+      soilMoisture[id] = clamp(m, 0, 1);
+
       if (terrain[id] !== BIOME.GRASS) continue; // Solo crece en pasto
       let inc = 0.02;                            // Ritmo base
       if (weatherState===WEATHER.RAIN) inc += 0.03;     // Lluvia acelera
@@ -361,6 +380,7 @@ function growPlants(){
       }
       const avg = sum / Math.max(1,neigh);
       inc *= (1 - 0.4*avg); // Más densidad vecina => menos crecimiento
+      inc *= (0.7 + 0.6 * soilMoisture[id]);
       // Incendio (overlay lógico): resta vegetación dentro del radio
       if (fire){
         const d2 = (x-fire.x)*(x-fire.x)+(y-fire.y)*(y-fire.y);
@@ -541,7 +561,7 @@ const state = {
   get fire(){ return fire; },
   set fire(v){ fire = v; },
   TILE, WORLD_W, WORLD_H,
-  animals, plant, terrain,
+  animals, plant, terrain, soilMoisture,
   speciesConfig,
   idx, clamp, WEATHER, WEATHER_NAMES, BIOME, COLORS,
   TOOL, defaultGenes, advanceWeather, growPlants, isNight,
@@ -618,6 +638,7 @@ function countGreens(){
 // ==============================================================
 setupUI(state);
 generateTerrain();                 // Crea el mapa base
+generateSoilMoisture();            // Inicializa humedad del suelo
 spawnAnimals();                    // Población inicial
 state.weatherTimer = 0; advanceWeather(0.01); // Forzar selección de clima inicial
 setTool(state, TOOL.INSPECT);            // Herramienta por defecto
@@ -632,8 +653,10 @@ function runSelfTests(){
 
   // Tamaños de buffers del mundo
   add('terrain tamaño', terrain.length === WORLD_W*WORLD_H);
+  add('soilMoisture tamaño', soilMoisture.length === WORLD_W*WORLD_H);
   // Asegura rango [0,1] en plantas
   add('plant [0,1]', (()=>{ for (let i=0;i<plant.length;i++){ const v=plant[i]; if(!(v>=0 && v<=1)) return false; } return true; })());
+  add('soilMoisture [0,1]', (()=>{ for (let i=0;i<soilMoisture.length;i++){ const v=soilMoisture[i]; if(!(v>=0 && v<=1)) return false; } return true; })());
 
   // Poblaciones iniciales
   const h0 = animals.filter(a=>a.sp==='HERB').length;
