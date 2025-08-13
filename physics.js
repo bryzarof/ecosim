@@ -14,6 +14,16 @@ export function step(state, dt){
     state.growPlants();
   }
 
+  // Rebuild spatial grid for faster neighborhood queries
+  const grid = state.grid;
+  for (let i=0;i<grid.length;i++) grid[i].length = 0;
+  for (const a of state.animals){
+    const gx = Math.floor(a.x / state.GRID_SIZE);
+    const gy = Math.floor(a.y / state.GRID_SIZE);
+    const gi = state.cellIndex(gx,gy);
+    grid[gi].push(a);
+  }
+
   for (let i=state.animals.length-1; i>=0; i--){
     const a = state.animals[i];
     a.cooldown = Math.max(0, a.cooldown - dt);
