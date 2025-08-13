@@ -83,16 +83,22 @@ const cvs = document.getElementById('sim');
 const ctx = cvs.getContext('2d', { alpha:false });
 
 function resizeCanvas() {
-  // Calcula tamaño CSS y backing-store respetando DPR para nitidez
-  const cssW = WORLD_W * TILE;
-  const cssH = WORLD_H * TILE;
+  // Calcula escala para ajustar la simulación al tamaño de la ventana
+  const worldPxW = WORLD_W * TILE;
+  const worldPxH = WORLD_H * TILE;
+  const scale = Math.min(window.innerWidth / worldPxW, window.innerHeight / worldPxH, 1);
+
+  // Ajusta el tamaño visible del lienzo respetando la relación de aspecto
+  const cssW = worldPxW * scale;
+  const cssH = worldPxH * scale;
   cvs.style.width = cssW + 'px';
   cvs.style.height = cssH + 'px';
-  // Escala el buffer interno según DPR para evitar borrosidad
-  cvs.width = Math.floor(cssW * DPR);
-  cvs.height = Math.floor(cssH * DPR);
+
+  // Mantiene el buffer interno a resolución completa para nitidez y escala vía CSS
+  cvs.width = Math.floor(worldPxW * DPR);
+  cvs.height = Math.floor(worldPxH * DPR);
   ctx.imageSmoothingEnabled = false;           // Look pixel-art
-  ctx.setTransform(DPR, 0, 0, DPR, 0, 0);      // Mapea 1 unidad lógica = 1 px CSS
+  ctx.setTransform(DPR, 0, 0, DPR, 0, 0);      // 1 unidad lógica = 1 px del mundo
 }
 resizeCanvas();
 window.addEventListener('resize', resizeCanvas);
