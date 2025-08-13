@@ -6,7 +6,7 @@
 */
 :root { --bg:#121212; --fg:#e5e5e5; --accent:#4ade80; }
 * { box-sizing: border-box; }
-html, body { height:100%; margin:0; background:var(--bg); color:var(--fg); font-family:ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, Noto Sans, Arial, "Apple Color Emoji","Segoe UI Emoji"; }
+html, body { height:100%; margin:0; overflow:hidden; background:var(--bg); color:var(--fg); font-family:ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, Noto Sans, Arial, "Apple Color Emoji","Segoe UI Emoji"; }
 .wrap { display:flex; flex-direction:column; height:100%; }
 
 header { position:fixed; top:10px; left:50%; transform:translateX(-50%); z-index:5; }
