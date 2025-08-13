@@ -199,7 +199,7 @@ const clamp = (v, a, b)=> Math.max(a, Math.min(b, v)); // Limita v al rango [a,b
 // ==============================================================
 //                         CANVAS SETUP
 // ==============================================================
-const cvs = document.getElementById('sim');
+const cvs = document.getElementById('worldCanvas');
 const ctx = cvs.getContext('2d', { alpha:false });
 
 let camX = 0, camY = 0, scale = 1;
