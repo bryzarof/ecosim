@@ -560,7 +560,18 @@ function reproduce(parent, species){
 // ==============================================================
 //                        INTERACCIÓN (FASE 4)
 // ==============================================================
-const TOOL = { INSPECT:'inspect', ADD_HERB:'add_herb', ADD_CARN:'add_carn', ERASER:'eraser', FOOD:'food', WATER:'water', BARRIER:'barrier' };
+export const TOOL = {
+  INSPECT: 'inspect',
+  ADD_HERB: 'add_herb',
+  ADD_CARN: 'add_carn',
+  ADD_RODENT: 'add_rodent',
+  ADD_WOLF: 'add_wolf',
+  ADD_POLLINATOR: 'add_pollinator',
+  ERASER: 'eraser',
+  FOOD: 'food',
+  WATER: 'water',
+  BARRIER: 'barrier'
+};
 
 // Toolbar DOM
 const toolbar = document.getElementById('toolbar');
