@@ -5,16 +5,13 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Simulador de Ecosistemas</title>
   <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="public/styles/hud.css">
 </head>
 <body>
   <div class="wrap">
     <header>
-      <div id="hud">
-        <span class="stat" title="Herbívoros">🐇 <span id="herbCount">0</span></span>
-        <span class="stat" title="Carnívoros">🦊 <span id="carnCount">0</span></span>
-        <span class="stat" title="Plantas densas">🌿 <span id="plantCount">0</span></span>
-        <button id="debugBtn" title="Mostrar info avanzada">⚙️</button>
-      </div>
+      <div id="hud"></div>
+      <button id="debugBtn" title="Mostrar info avanzada">⚙️</button>
       <div id="debugPanel" class="hidden">
         <span id="fps">FPS: --</span>
         <span id="clock">Hora: --:--</span>
