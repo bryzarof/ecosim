@@ -8,7 +8,7 @@ import { initSidebar } from './sidebar.js';
 import { initMinimap, updateMinimap } from './minimap.js';
 import { initMainMenu } from './src/ui/mainMenu.js';
 import { loadSettings, saveSettings } from './src/state/persistence.js';
-import { gsap } from 'gsap';
+import { gsap } from 'https://cdn.jsdelivr.net/npm/gsap@3.13.0/index.js';
 let state;
 // ==============================================================
 //                    PARÁMETROS DEL MUNDO
@@ -199,7 +199,11 @@ const clamp = (v, a, b)=> Math.max(a, Math.min(b, v)); // Limita v al rango [a,b
 // ==============================================================
 //                         CANVAS SETUP
 // ==============================================================
-const cvs = document.getElementById('worldCanvas');
+const cvs = document.getElementById('sim');
+if (!cvs) {
+  console.error('Canvas element with id "sim" not found');
+  throw new Error('Canvas element with id "sim" not found');
+}
 const ctx = cvs.getContext('2d', { alpha:false });
 
 let camX = 0, camY = 0, scale = 1;

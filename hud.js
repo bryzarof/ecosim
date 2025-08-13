@@ -1,4 +1,4 @@
-import { gsap } from 'gsap';
+import { gsap } from 'https://cdn.jsdelivr.net/npm/gsap@3.13.0/index.js';
 import { saveSettings } from './src/state/persistence.js';
 
 export function initHUD(state) {
