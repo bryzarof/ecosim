@@ -40,6 +40,17 @@ const plant = new Float32Array(WORLD_W * WORLD_H);
 const terrain = new Uint8Array(WORLD_W * WORLD_H);
 const soilMoisture = new Float32Array(WORLD_W * WORLD_H);
 
+// Per-tile crowding counters grouped by size class
+const crowdSmall = new Float32Array(WORLD_W * WORLD_H);
+const crowdMedium = new Float32Array(WORLD_W * WORLD_H);
+const crowdLarge = new Float32Array(WORLD_W * WORLD_H);
+
+// Size thresholds and crowding control parameters
+const SMALL_LIMIT = 0.30;      // radius < SMALL_LIMIT => small
+const LARGE_LIMIT = 0.36;      // radius >= LARGE_LIMIT => large
+const CROWD_THRESH = { small:6, medium:4, large:2 };
+const CROWD_DECAY = 0.6;       // decay factor applied each step
+
 // Configuración de especies y poblaciones iniciales
 // Cada especie define parámetros básicos y dieta de recursos o presas
 const speciesConfig = {
@@ -570,6 +581,8 @@ const state = {
   triggerFireCenter, strikeMeteor, plague,
   toolbar, cvs, ctx,
   sprites,
+  crowdSmall, crowdMedium, crowdLarge,
+  CROWD_THRESH, CROWD_DECAY, SMALL_LIMIT, LARGE_LIMIT,
   terrainCanvas:null,
   redrawTerrain:true,
   grid, GRID_SIZE, GRID_W, GRID_H, cellIndex,
