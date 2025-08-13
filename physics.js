@@ -31,52 +31,44 @@ export function step(state, dt){
 
     if (a.age > a.genes.lifespan){ state.animals.splice(i,1); continue; }
 
-    const base = (a.sp===state.SPECIES.HERB?state.HERB:state.CARN);
+    const cfg = state.speciesConfig[a.sp];
     const night = state.isNight();
-    const speedNightMul = (a.sp===state.SPECIES.CARN) ? (night?1.1:1.0) : (night?0.9:1.0);
-    const visionNightMul = (a.sp===state.SPECIES.CARN) ? (night?1.1:1.0) : (night?0.9:1.0);
+    const speedNightMul = night ? (cfg.nightSpeedMul || 1.0) : 1.0;
+    const visionNightMul = night ? (cfg.nightVisionMul || 1.0) : 1.0;
 
     const effSpeed = (a.speed * a.genes.speedMul) * speedNightMul;
-    const hungerRate = (a.sp===state.SPECIES.HERB?state.HERB.hungerRate:state.CARN.hungerRate) * a.genes.metabolismMul;
+    const hungerRate = cfg.hungerRate * a.genes.metabolismMul;
 
-    if (a.sp === state.SPECIES.HERB){
-      a.energy -= hungerRate * dt;
-      const threat = state.nearestPredator(a, (base.vision * a.genes.visionMul) * visionNightMul);
-      if (threat){
-        const ang = Math.atan2(a.y - threat.y, a.x - threat.x);
-        a.dir = ang + (Math.random()-0.5)*0.6;
-      } else {
-        a.dir += (Math.random()-0.5) * a.wobble * dt * 2.0;
-      }
-      state.moveCreature(a, dt, effSpeed);
-      state.clampInside(a);
-      state.eatPlant(a);
-      if (a.energy > state.HERB.reproThreshold && a.cooldown<=0){
-        state.reproduce(a, state.SPECIES.HERB);
-        a.energy -= state.HERB.reproCost;
-        a.cooldown = 5;
-      }
+    a.energy -= hungerRate * dt;
+    const vision = (cfg.vision * a.genes.visionMul) * visionNightMul;
+    const threat = state.nearestPredator(a, vision);
+    const prey = state.nearestPrey(a, vision);
+
+    if (threat){
+      const ang = Math.atan2(a.y - threat.y, a.x - threat.x);
+      a.dir = ang + (Math.random()-0.5)*0.6;
+    } else if (prey){
+      const ang = Math.atan2(prey.y - a.y, prey.x - a.x);
+      a.dir = ang + (Math.random()-0.5)*0.2;
     } else {
-      a.energy -= hungerRate * dt;
-      const prey = state.nearestHerbivore(a, (base.vision * a.genes.visionMul) * visionNightMul);
-      if (prey){
-        const ang = Math.atan2(prey.y - a.y, prey.x - a.x);
-        a.dir = ang + (Math.random()-0.5)*0.2;
-      } else {
-        a.dir += (Math.random()-0.5) * a.wobble * dt * 1.3;
-      }
-      state.moveCreature(a, dt, effSpeed);
-      state.clampInside(a);
-      if (prey && state.dist2(a, prey) < (a.r*state.TILE + prey.r*state.TILE) * (a.r*state.TILE + prey.r*state.TILE)){
-        a.energy += state.CARN.eatRate;
-        const idxPrey = state.animals.indexOf(prey);
-        if (idxPrey !== -1) state.animals.splice(idxPrey,1);
-      }
-      if (a.energy > state.CARN.reproThreshold && a.cooldown<=0){
-        state.reproduce(a, state.SPECIES.CARN);
-        a.energy -= state.CARN.reproCost;
-        a.cooldown = 7;
-      }
+      a.dir += (Math.random()-0.5) * a.wobble * dt * (cfg.wanderFactor || 1.5);
+    }
+
+    state.moveCreature(a, dt, effSpeed);
+    state.clampInside(a);
+    state.eatPlant(a);
+
+    if (prey && state.dist2(a, prey) < (a.r*state.TILE + prey.r*state.TILE) * (a.r*state.TILE + prey.r*state.TILE)){
+      const diet = cfg.diet[prey.sp];
+      if (diet) a.energy += diet.energy;
+      const idxPrey = state.animals.indexOf(prey);
+      if (idxPrey !== -1) state.animals.splice(idxPrey,1);
+    }
+
+    if (a.energy > cfg.reproThreshold && a.cooldown<=0){
+      state.reproduce(a, a.sp);
+      a.energy -= cfg.reproCost;
+      a.cooldown = cfg.reproCooldown;
     }
 
     if (a.energy <= 0){ state.animals.splice(i,1); }

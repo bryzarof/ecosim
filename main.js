@@ -38,28 +38,92 @@ const COLORS = {
 const plant = new Float32Array(WORLD_W * WORLD_H);
 const terrain = new Uint8Array(WORLD_W * WORLD_H);
 
-// Especies y población inicial
-const SPECIES = { HERB: 0, CARN: 1 };
-const HERB_START = 28;   // Población inicial de herbívoros
-const CARN_START = 10;   // Población inicial de carnívoros
-
-// Parámetros base de especies (tasa de hambre, visión, etc.)
-const HERB = {
-  baseSpeed: 0.55,
-  hungerRate: 0.015,     // Energía perdida por segundo
-  eatRate: 0.18,         // Energía ganada por bocado de planta
-  eatPlantDelta: 0.22,   // Reducción de vegetación por bocado
-  reproThreshold: 1.6,   // Energía mínima para reproducirse
-  reproCost: 0.8,
-  vision: 6              // Alcance de visión en tiles
-};
-const CARN = {
-  baseSpeed: 0.7,
-  hungerRate: 0.02,
-  eatRate: 0.9,          // Energía ganada por capturar presa
-  reproThreshold: 2.2,
-  reproCost: 1.1,
-  vision: 9
+// Configuración de especies y poblaciones iniciales
+// Cada especie define parámetros básicos y dieta de recursos o presas
+const speciesConfig = {
+  HERB: {
+    start: 28,
+    baseSpeed: 0.55,
+    hungerRate: 0.015,           // Energía perdida por segundo
+    reproThreshold: 1.6,         // Energía mínima para reproducirse
+    reproCost: 0.8,
+    reproCooldown: 5,
+    vision: 6,
+    nightSpeedMul: 0.9,
+    nightVisionMul: 0.9,
+    maxEnergy: 2.5,
+    radius: 0.32,
+    initEnergy: 1.0,
+    addEnergy: 1.0,
+    offspringEnergy: 0.8,
+    wanderFactor: 2.0,
+    diet: { PLANT: { energy: 0.18, plantDelta: 0.22 } }
+  },
+  CARN: {
+    start: 10,
+    baseSpeed: 0.7,
+    hungerRate: 0.02,
+    reproThreshold: 2.2,
+    reproCost: 1.1,
+    reproCooldown: 7,
+    vision: 9,
+    nightSpeedMul: 1.1,
+    nightVisionMul: 1.1,
+    radius: 0.36,
+    initEnergy: 1.4,
+    addEnergy: 1.2,
+    offspringEnergy: 1.0,
+    wanderFactor: 1.3,
+    diet: { HERB: { energy: 0.9 } }
+  },
+  RODENT: {
+    start: 0,
+    baseSpeed: 0.5,
+    hungerRate: 0.02,
+    reproThreshold: 1.2,
+    reproCost: 0.6,
+    reproCooldown: 5,
+    vision: 5,
+    nightSpeedMul: 0.9,
+    nightVisionMul: 0.9,
+    radius: 0.3,
+    initEnergy: 0.9,
+    offspringEnergy: 0.7,
+    wanderFactor: 2.0,
+    diet: { PLANT: { energy: 0.15, plantDelta: 0.2 } }
+  },
+  WOLF: {
+    start: 0,
+    baseSpeed: 0.8,
+    hungerRate: 0.025,
+    reproThreshold: 2.4,
+    reproCost: 1.2,
+    reproCooldown: 7,
+    vision: 10,
+    nightSpeedMul: 1.1,
+    nightVisionMul: 1.1,
+    radius: 0.38,
+    initEnergy: 1.5,
+    offspringEnergy: 1.1,
+    wanderFactor: 1.3,
+    diet: { HERB: { energy: 0.9 }, RODENT: { energy: 0.8 } }
+  },
+  POLLINATOR: {
+    start: 0,
+    baseSpeed: 0.5,
+    hungerRate: 0.01,
+    reproThreshold: 1.0,
+    reproCost: 0.5,
+    reproCooldown: 5,
+    vision: 4,
+    nightSpeedMul: 1.0,
+    nightVisionMul: 1.0,
+    radius: 0.28,
+    initEnergy: 0.8,
+    offspringEnergy: 0.6,
+    wanderFactor: 2.0,
+    diet: { PLANT: { energy: 0.1, plantDelta: 0.05 } }
+  }
 };
 
 // Array dinámico de individuos; cada uno es un objeto con estado y genes
@@ -210,8 +274,9 @@ function spawnAnimals(){
   // Reinicia y spawnea poblaciones iniciales con RNG semillado para reproducibilidad
   animals.length = 0;
   const rng = seededRandom(42);
-  for(let i=0;i<HERB_START;i++) animals.push(spawnOne(rng, SPECIES.HERB));
-  for(let i=0;i<CARN_START;i++) animals.push(spawnOne(rng, SPECIES.CARN));
+  for (const [name,cfg] of Object.entries(speciesConfig)){
+    for(let i=0;i<cfg.start;i++) animals.push(spawnOne(rng, name));
+  }
 }
 
 // Genera genes con RNG opcional; si no hay rngFn, usa Math.random
@@ -234,16 +299,16 @@ function spawnOne(rng, species){
     y = Math.floor(rng()*WORLD_H);
     if (terrain[idx(x,y)] === BIOME.GRASS) break;
   }
-  const base = (species===SPECIES.HERB?HERB:CARN);
+  const cfg = speciesConfig[species];
   const genes = defaultGenes(species, rng); // Hereda/varía con RNG de spawn
   return {
     sp: species,                     // Especie
     x: x + 0.5, y: y + 0.5,          // Posición en coordenadas de tile (centro)
     dir: rng()*Math.PI*2,            // Dirección inicial en radianes
-    speed: base.baseSpeed + rng()*0.35, // Velocidad base con ruido individual
+    speed: cfg.baseSpeed + rng()*0.35, // Velocidad base con ruido individual
     wobble: rng()*0.6 + 0.2,         // Zig-zag aleatorio
-    r: (species===SPECIES.HERB?0.32:0.36) + rng()*0.1, // Radio de dibujo
-    energy: (species===SPECIES.HERB?1.0:1.4),
+    r: cfg.radius + rng()*0.1,       // Radio de dibujo
+    energy: cfg.initEnergy,
     cooldown: 0,                     // Tiempo hasta poder reproducirse de nuevo
     age: 0,                          // Edad acumulada
     genes                           // Objeto de genes
@@ -328,14 +393,16 @@ function clampInside(a){
   if (t === BIOME.WATER || t === BIOME.BARRIER){ a.dir += Math.PI*0.8; }
 }
 function eatPlant(a){
-  // Herbívoro come planta del tile actual si hay suficiente densidad
-  if (a.sp!==SPECIES.HERB) return;
+  // Consume planta si la especie tiene dieta de plantas
+  const diet = speciesConfig[a.sp].diet.PLANT;
+  if (!diet) return;
   const x = Math.floor(a.x), y = Math.floor(a.y);
   if (terrain[idx(x,y)]!==BIOME.GRASS) return;
   const id = idx(x,y);
   if (plant[id] > 0.05){
-    a.energy = Math.min(a.energy + HERB.eatRate, 2.5);
-    plant[id] = Math.max(0, plant[id] - HERB.eatPlantDelta);
+    const maxE = speciesConfig[a.sp].maxEnergy ?? Infinity;
+    a.energy = Math.min(a.energy + diet.energy, maxE);
+    plant[id] = Math.max(0, plant[id] - (diet.plantDelta || 0));
   }
 }
 function dist2(a,b){
@@ -343,42 +410,38 @@ function dist2(a,b){
   const dx = (a.x-b.x)*TILE, dy = (a.y-b.y)*TILE;
   return dx*dx + dy*dy;
 }
-function nearestHerbivore(pred, visionTiles){
-  // Busca el herbívoro más cercano usando la grilla espacial
+function nearestOfSpecies(from, speciesList, visionTiles){
+  // Busca el individuo más cercano de entre una lista de especies
   const gSize = GRID_SIZE;
-  const gx = Math.floor(pred.x / gSize);
-  const gy = Math.floor(pred.y / gSize);
+  const gx = Math.floor(from.x / gSize);
+  const gy = Math.floor(from.y / gSize);
   const rad = Math.ceil(visionTiles / gSize);
   let best=null, bestD = (visionTiles*TILE)*(visionTiles*TILE);
   for(let yy=Math.max(0,gy-rad); yy<=Math.min(GRID_H-1,gy+rad); yy++){
     for(let xx=Math.max(0,gx-rad); xx<=Math.min(GRID_W-1,gx+rad); xx++){
       const cell = grid[cellIndex(xx,yy)];
       for(const b of cell){
-        if (b.sp!==SPECIES.HERB) continue;
-        const d2 = dist2(pred,b);
+        if (!speciesList.includes(b.sp)) continue;
+        const d2 = dist2(from,b);
         if (d2 < bestD){ bestD = d2; best = b; }
       }
     }
   }
   return best;
 }
-function nearestPredator(h, visionTiles){
-  // Devuelve un depredador cercano usando la grilla espacial
-  const gSize = GRID_SIZE;
-  const gx = Math.floor(h.x / gSize);
-  const gy = Math.floor(h.y / gSize);
-  const rad = Math.ceil(visionTiles / gSize);
-  for(let yy=Math.max(0,gy-rad); yy<=Math.min(GRID_H-1,gy+rad); yy++){
-    for(let xx=Math.max(0,gx-rad); xx<=Math.min(GRID_W-1,gx+rad); xx++){
-      const cell = grid[cellIndex(xx,yy)];
-      for(const b of cell){
-        if (b.sp!==SPECIES.CARN) continue;
-        const d2 = dist2(h,b);
-        if (d2 < (visionTiles*TILE)*(visionTiles*TILE)) return b;
-      }
-    }
+function nearestPrey(pred, visionTiles){
+  const diet = speciesConfig[pred.sp].diet;
+  const preyList = Object.keys(diet).filter(k=>k!== 'PLANT');
+  if (preyList.length===0) return null;
+  return nearestOfSpecies(pred, preyList, visionTiles);
+}
+function nearestPredator(animal, visionTiles){
+  const predators = [];
+  for (const [sp,cfg] of Object.entries(speciesConfig)){
+    if (cfg.diet && cfg.diet[animal.sp]) predators.push(sp);
   }
-  return null;
+  if (predators.length===0) return null;
+  return nearestOfSpecies(animal, predators, visionTiles);
 }
 function mutate(val, sigma, min, max){
   // Mutación uniforme acotada (simple y robusta)
@@ -388,6 +451,7 @@ function mutate(val, sigma, min, max){
 function reproduce(parent, species){
   // Reproducción asexual: hijo = padre +/- mutaciones pequeñas
   const g = parent.genes;
+  const cfg = speciesConfig[species];
   const child = {
     sp: species,
     x: parent.x + (Math.random()-0.5)*0.6,
@@ -396,7 +460,7 @@ function reproduce(parent, species){
     speed: Math.max(0.35, parent.speed * (0.95 + Math.random()*0.1)),
     wobble: Math.max(0.1, parent.wobble * (0.95 + Math.random()*0.1)),
     r: Math.max(0.24, parent.r * (0.97 + Math.random()*0.06)),
-    energy: species===SPECIES.HERB ? 0.8 : 1.0,
+    energy: cfg.offspringEnergy,
     cooldown: 3,
     age: 0,
     genes: {
@@ -478,10 +542,10 @@ const state = {
   set fire(v){ fire = v; },
   TILE, WORLD_W, WORLD_H,
   animals, plant, terrain,
-  SPECIES, HERB, CARN, HERB_START, CARN_START,
+  speciesConfig,
   idx, clamp, WEATHER, WEATHER_NAMES, BIOME, COLORS,
   TOOL, defaultGenes, advanceWeather, growPlants, isNight,
-  nearestPredator, nearestHerbivore, moveCreature, clampInside,
+  nearestPredator, nearestPrey, moveCreature, clampInside,
   eatPlant, reproduce, dist2, daylightFactor,
   triggerFireCenter, strikeMeteor, plague,
   toolbar, cvs, ctx,
@@ -526,8 +590,8 @@ function loop(now){
   if (fpsTime >= 0.5){
     fps = Math.round(frames / fpsTime);
     frames = 0; fpsTime = 0;
-    const h = animals.filter(a=>a.sp===SPECIES.HERB).length;
-    const c = animals.filter(a=>a.sp===SPECIES.CARN).length;
+    const h = animals.filter(a=>a.sp==='HERB').length;
+    const c = animals.filter(a=>a.sp==='CARN').length;
     if ($fps) $fps.textContent = `FPS: ${fps}`;
     if ($herb) $herb.textContent = h;
     if ($carn) $carn.textContent = c;
@@ -572,10 +636,10 @@ function runSelfTests(){
   add('plant [0,1]', (()=>{ for (let i=0;i<plant.length;i++){ const v=plant[i]; if(!(v>=0 && v<=1)) return false; } return true; })());
 
   // Poblaciones iniciales
-  const h0 = animals.filter(a=>a.sp===SPECIES.HERB).length;
-  const c0 = animals.filter(a=>a.sp===SPECIES.CARN).length;
-  add('HERB_START', h0 === HERB_START, `h0=${h0}`);
-  add('CARN_START', c0 === CARN_START, `c0=${c0}`);
+  const h0 = animals.filter(a=>a.sp==='HERB').length;
+  const c0 = animals.filter(a=>a.sp==='CARN').length;
+  add('HERB_START', h0 === speciesConfig.HERB.start, `h0=${h0}`);
+  add('CARN_START', c0 === speciesConfig.CARN.start, `c0=${c0}`);
 
   // UI básica presente
   add('Toolbar presente', !!document.getElementById('toolbar'));
@@ -595,7 +659,7 @@ function runSelfTests(){
 
   // Verifica FIX de RNG: defaultGenes sin rng debe funcionar y estar en rango
   let okGenes = true; let g;
-  try { g = defaultGenes(SPECIES.HERB); } catch(e){ okGenes = false; }
+  try { g = defaultGenes('HERB'); } catch(e){ okGenes = false; }
   add('defaultGenes() sin rng no falla', okGenes);
   if (okGenes){
     add('speedMul rango', g.speedMul>=0.75 && g.speedMul<=1.35, `v=${g.speedMul.toFixed(3)}`);
