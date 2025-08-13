@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Fase 4 · Simulador de Ecosistemas (Canvas)</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <h1>Fase 4 · Interacción: Especies, Recursos y Eventos</h1>
+      <div class="metrics">
+        <span class="tag" id="fps">FPS: --</span>
+        <span class="tag" id="count">Herbívoros: -- · Carnívoros: -- · Plantas densas: --</span>
+        <span class="tag" id="clock">Hora: --:--</span>
+        <span class="tag" id="weather">Clima: --</span>
+        <span class="tag" id="tick">t: 0.0s</span>
+      </div>
+    </header>
+
+    <div class="panel toolbar" id="toolbar">
+      <span class="hint">Herramientas:</span>
+      <!--
+        Herramientas de interacción:
+        - Inspeccionar: loguea al animal más cercano
+        - Añadir Herb/Carn: spawnea individuos
+        - Goma: elimina animales en un radio
+        - Comida: incrementa densidad de plantas en un tile
+        - Agua: cambia tile a agua (planta=0)
+        - Barrera: obstáculo sólido (animales lo evitan)
+      -->
+      <button class="btn" data-tool="inspect">🔎 Inspeccionar</button>
+      <button class="btn" data-tool="add_herb">➕ Herbívoro (1)</button>
+      <button class="btn" data-tool="add_carn">➕ Carnívoro (2)</button>
+      <button class="btn" data-tool="eraser">🧽 Goma (3)</button>
+      <button class="btn" data-tool="food">🌿 Comida (4)</button>
+      <button class="btn" data-tool="water">💧 Agua (5)</button>
+      <button class="btn" data-tool="barrier">🧱 Barrera (6)</button>
+      <span class="hint" style="margin-left:10px">Eventos:</span>
+      <button class="btn" id="evtFire">🔥 Incendio (F)</button>
+      <button class="btn" id="evtMeteor">☄️ Meteorito (M)</button>
+      <button class="btn" id="evtPlagueH">🦠 Plaga Herb. (P)</button>
+      <button class="btn" id="evtPlagueC">🦠 Plaga Carn. (O)</button>
+    </div>
+
+    <div class="panel">
+      <span class="hint">Ciclo día/noche, clima (lluvia/sequía), genética heredable y herramientas de intervención. <b>FIX:</b> RNG opcional en genes para evitar <code>rng is not a function</code>.</span>
+    </div>
+
+    <canvas id="sim" width="1000" height="600"></canvas>
+
+    <footer>
+      Ajusta <code>WORLD_W</code>, <code>WORLD_H</code>, <code>TILE</code>, <code>DAY_LENGTH_SEC</code>. Usa las teclas 1–7 y F/M/P/O.
+    </footer>
+  </div>
+
+    <script src="main.js"></script>
+</body>
+</html>
