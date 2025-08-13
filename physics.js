@@ -53,7 +53,7 @@ export function step(state, dt){
     const visionNightMul = night ? (cfg.nightVisionMul || 1.0) : 1.0;
 
     const effSpeed = (a.speed * a.genes.speedMul) * speedNightMul;
-    const hungerRate = cfg.hungerRate * a.genes.metabolismMul;
+    const hungerRate = cfg.hungerRate * a.genes.metabolismMul * (state.mortalityMul[a.sp] || 1);
 
     a.energy -= hungerRate * dt;
     const vision = (cfg.vision * a.genes.visionMul) * visionNightMul;
@@ -119,9 +119,11 @@ export function step(state, dt){
       if (idxPrey !== -1) state.animals.splice(idxPrey,1);
     }
 
-    if (a.energy > cfg.reproThreshold && a.cooldown<=0){
-      let chance = 1;
+    const thresh = cfg.reproThreshold * (state.reproThresholdMul[a.sp] || 1);
+    if (a.energy > thresh && a.cooldown<=0 && state.spawnEnabled[a.sp]){
+      let chance = state.spawnRate[a.sp] || 1;
       if (overcrowded) chance *= crowdThresh / crowdCount;
+      chance = Math.min(1, Math.max(0, chance));
       if (Math.random() < chance){
         state.reproduce(a, a.sp);
         a.energy -= cfg.reproCost;

@@ -39,6 +39,7 @@ export function render(state){
   // Animated animal sprites
   const frame = Math.floor(state.simTime*6)%2;
   for(const a of animals){
+    if (state.hiddenSpecies[a.sp]) continue;
     const imgSet = sprites[a.sp.toLowerCase()] || sprites.herb;
     const img = imgSet[frame];
     const size = a.r*2*TILE;

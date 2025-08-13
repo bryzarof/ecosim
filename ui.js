@@ -94,4 +94,21 @@ export function setupUI(state){
   document.getElementById('evtMeteor').addEventListener('click', state.strikeMeteor);
   document.getElementById('evtPlagueH').addEventListener('click', ()=> state.plague('HERB',0.35));
   document.getElementById('evtPlagueC').addEventListener('click', ()=> state.plague('CARN',0.5));
+
+  const panel = document.getElementById('speciesPanel');
+  if (panel){
+    panel.querySelectorAll('.sp').forEach(row=>{
+      const sp = row.dataset.sp;
+      const spawnT = row.querySelector('.spawn-toggle');
+      const visT = row.querySelector('.vis-toggle');
+      const sRate = row.querySelector('.spawnRate');
+      const rMul = row.querySelector('.reproThresholdMul');
+      const mMul = row.querySelector('.mortalityMul');
+      if (spawnT) spawnT.addEventListener('change',()=> state.spawnEnabled[sp] = spawnT.checked);
+      if (visT) visT.addEventListener('change',()=> state.hiddenSpecies[sp] = !visT.checked);
+      if (sRate) sRate.addEventListener('input',()=> state.spawnRate[sp] = parseFloat(sRate.value));
+      if (rMul) rMul.addEventListener('input',()=> state.reproThresholdMul[sp] = parseFloat(rMul.value));
+      if (mMul) mMul.addEventListener('input',()=> state.mortalityMul[sp] = parseFloat(mMul.value));
+    });
+  }
 }

@@ -163,6 +163,13 @@ const speciesConfig = {
 // Array dinámico de individuos; cada uno es un objeto con estado y genes
 const animals = [];
 
+const speciesList = Object.keys(speciesConfig);
+const spawnEnabled = Object.fromEntries(speciesList.map(s=>[s,true]));
+const hiddenSpecies = Object.fromEntries(speciesList.map(s=>[s,false]));
+const spawnRate = Object.fromEntries(speciesList.map(s=>[s,1]));
+const reproThresholdMul = Object.fromEntries(speciesList.map(s=>[s,1]));
+const mortalityMul = Object.fromEntries(speciesList.map(s=>[s,1]));
+
 // Spatial grid for neighborhood queries (optimizes nearest searches)
 const GRID_SIZE = 10; // tiles per cell
 const GRID_W = Math.ceil(WORLD_W / GRID_SIZE);
@@ -612,6 +619,8 @@ const state = {
   TILE, WORLD_W, WORLD_H,
   animals, plant, terrain, soilMoisture,
   speciesConfig,
+  spawnEnabled, hiddenSpecies,
+  spawnRate, reproThresholdMul, mortalityMul,
   idx, clamp, WEATHER, WEATHER_NAMES, BIOME, COLORS,
   TOOL, defaultGenes, advanceWeather, growPlants, isNight,
   nearestPredator, nearestPrey, moveCreature, clampInside,
