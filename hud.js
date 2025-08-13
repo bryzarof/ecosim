@@ -1,6 +1,15 @@
 import { gsap } from 'https://cdn.jsdelivr.net/npm/gsap@3.13.0/index.js';
 import { saveSettings } from './src/state/persistence.js';
 
+export const stats = [
+  { id: 'herbCount', label: '🐇', title: 'Herbívoros' },
+  { id: 'carnCount', label: '🦊', title: 'Carnívoros' },
+  { id: 'rodentCount', label: '🐀', title: 'Roedores' },
+  { id: 'wolfCount', label: '🐺', title: 'Lobos' },
+  { id: 'pollinatorCount', label: '🐝', title: 'Polinizadores' },
+  { id: 'plantCount', label: '🌿', title: 'Plantas densas' }
+];
+
 export function initHUD(state) {
   const hud = document.getElementById('hud');
   if (!hud) return;
@@ -20,65 +29,20 @@ export function initHUD(state) {
   weather.title = 'Clima';
   hud.appendChild(weather);
 
-  const herb = document.createElement('span');
-  herb.className = 'stat';
-  herb.title = 'Herbívoros';
-  herb.appendChild(document.createTextNode('🐇 '));
-  const herbCount = document.createElement('span');
-  herbCount.id = 'herbCount';
-  herbCount.textContent = '0';
-  herb.appendChild(herbCount);
-  hud.appendChild(herb);
+  const hudElements = { playBtn, clock, weather };
 
-  const carn = document.createElement('span');
-  carn.className = 'stat';
-  carn.title = 'Carnívoros';
-  carn.appendChild(document.createTextNode('🦊 '));
-  const carnCount = document.createElement('span');
-  carnCount.id = 'carnCount';
-  carnCount.textContent = '0';
-  carn.appendChild(carnCount);
-  hud.appendChild(carn);
-
-  const rodent = document.createElement('span');
-  rodent.className = 'stat';
-  rodent.title = 'Roedores';
-  rodent.appendChild(document.createTextNode('🐀 '));
-  const rodentCount = document.createElement('span');
-  rodentCount.id = 'rodentCount';
-  rodentCount.textContent = '0';
-  rodent.appendChild(rodentCount);
-  hud.appendChild(rodent);
-
-  const wolf = document.createElement('span');
-  wolf.className = 'stat';
-  wolf.title = 'Lobos';
-  wolf.appendChild(document.createTextNode('🐺 '));
-  const wolfCount = document.createElement('span');
-  wolfCount.id = 'wolfCount';
-  wolfCount.textContent = '0';
-  wolf.appendChild(wolfCount);
-  hud.appendChild(wolf);
-
-  const pollinator = document.createElement('span');
-  pollinator.className = 'stat';
-  pollinator.title = 'Polinizadores';
-  pollinator.appendChild(document.createTextNode('🐝 '));
-  const pollinatorCount = document.createElement('span');
-  pollinatorCount.id = 'pollinatorCount';
-  pollinatorCount.textContent = '0';
-  pollinator.appendChild(pollinatorCount);
-  hud.appendChild(pollinator);
-
-  const plant = document.createElement('span');
-  plant.className = 'stat';
-  plant.title = 'Plantas densas';
-  plant.appendChild(document.createTextNode('🌿 '));
-  const plantCount = document.createElement('span');
-  plantCount.id = 'plantCount';
-  plantCount.textContent = '0';
-  plant.appendChild(plantCount);
-  hud.appendChild(plant);
+  stats.forEach(({ id, label, title }) => {
+    const stat = document.createElement('span');
+    stat.className = 'stat';
+    stat.title = title;
+    stat.appendChild(document.createTextNode(`${label} `));
+    const count = document.createElement('span');
+    count.id = id;
+    count.textContent = '0';
+    stat.appendChild(count);
+    hud.appendChild(stat);
+    hudElements[id] = count;
+  });
 
   playBtn.addEventListener('click', () => {
     state.paused = !state.paused;
@@ -89,7 +53,7 @@ export function initHUD(state) {
     }
   });
 
-  state.hud = { playBtn, clock, weather, herbCount, carnCount, plantCount, rodentCount, wolfCount, pollinatorCount };
+  state.hud = hudElements;
   state.hudPrevWeather = -1;
 }
 
@@ -97,21 +61,22 @@ export function updateHUD(state) {
   const hud = state.hud;
   if (!hud) return;
 
-  const herb = state.animals.filter(a => a.sp === 'HERB').length;
-  const carn = state.animals.filter(a => a.sp === 'CARN').length;
-  const rodent = state.animals.filter(a => a.sp === 'RODENT').length;
-  const wolf = state.animals.filter(a => a.sp === 'WOLF').length;
-  const pollinator = state.animals.filter(a => a.sp === 'POLLINATOR').length;
-  let plants = 0;
+  const counts = {
+    herbCount: state.animals.filter(a => a.sp === 'HERB').length,
+    carnCount: state.animals.filter(a => a.sp === 'CARN').length,
+    rodentCount: state.animals.filter(a => a.sp === 'RODENT').length,
+    wolfCount: state.animals.filter(a => a.sp === 'WOLF').length,
+    pollinatorCount: state.animals.filter(a => a.sp === 'POLLINATOR').length,
+    plantCount: 0
+  };
+
   for (let i = 0; i < state.terrain.length; i++) {
-    if (state.terrain[i] === state.BIOME.GRASS && state.plant[i] > 0.33) plants++;
+    if (state.terrain[i] === state.BIOME.GRASS && state.plant[i] > 0.33) counts.plantCount++;
   }
-  hud.herbCount.textContent = herb;
-  hud.carnCount.textContent = carn;
-  hud.rodentCount.textContent = rodent;
-  hud.wolfCount.textContent = wolf;
-  hud.pollinatorCount.textContent = pollinator;
-  hud.plantCount.textContent = plants;
+
+  stats.forEach(({ id }) => {
+    if (hud[id]) hud[id].textContent = counts[id];
+  });
 
   const dayT = (state.worldTime % state.DAY_LENGTH_SEC) / state.DAY_LENGTH_SEC;
   const hours = Math.floor(dayT * 24);
@@ -140,4 +105,4 @@ export function updateHUD(state) {
     }
     state.hudPrevWeather = state.weatherState;
   }
-  }
+}
