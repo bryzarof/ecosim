@@ -44,6 +44,7 @@ const soilMoisture = new Float32Array(WORLD_W * WORLD_H);
 const crowdSmall = new Float32Array(WORLD_W * WORLD_H);
 const crowdMedium = new Float32Array(WORLD_W * WORLD_H);
 const crowdLarge = new Float32Array(WORLD_W * WORLD_H);
+const pollinatorBoost = new Uint8Array(WORLD_W * WORLD_H);
 
 // Size thresholds and crowding control parameters
 const SMALL_LIMIT = 0.30;      // radius < SMALL_LIMIT => small
@@ -58,10 +59,14 @@ const speciesConfig = {
     start: 28,
     baseSpeed: 0.55,
     hungerRate: 0.015,           // Energía perdida por segundo
+    vision: 6,
+    preyEnergy: 0.9,
+    fecundity: 1.6,
+    size: 'medium',
+    lifespan: 200,
     reproThreshold: 1.6,         // Energía mínima para reproducirse
     reproCost: 0.8,
     reproCooldown: 5,
-    vision: 6,
     nightSpeedMul: 0.9,
     nightVisionMul: 0.9,
     maxEnergy: 2.5,
@@ -76,10 +81,14 @@ const speciesConfig = {
     start: 10,
     baseSpeed: 0.7,
     hungerRate: 0.02,
+    vision: 9,
+    preyEnergy: 1.2,
+    fecundity: 2.2,
+    size: 'medium',
+    lifespan: 220,
     reproThreshold: 2.2,
     reproCost: 1.1,
     reproCooldown: 7,
-    vision: 9,
     nightSpeedMul: 1.1,
     nightVisionMul: 1.1,
     radius: 0.36,
@@ -87,16 +96,20 @@ const speciesConfig = {
     addEnergy: 1.2,
     offspringEnergy: 1.0,
     wanderFactor: 1.3,
-    diet: { HERB: { energy: 0.9 } }
+    diet: { HERB: true }
   },
   RODENT: {
-    start: 0,
+    start: 12,
     baseSpeed: 0.5,
     hungerRate: 0.02,
+    vision: 5,
+    preyEnergy: 0.8,
+    fecundity: 1.2,
+    size: 'small',
+    lifespan: 180,
     reproThreshold: 1.2,
     reproCost: 0.6,
     reproCooldown: 5,
-    vision: 5,
     nightSpeedMul: 0.9,
     nightVisionMul: 0.9,
     radius: 0.3,
@@ -106,36 +119,44 @@ const speciesConfig = {
     diet: { PLANT: { energy: 0.15, plantDelta: 0.2 } }
   },
   WOLF: {
-    start: 0,
+    start: 4,
     baseSpeed: 0.8,
     hungerRate: 0.025,
+    vision: 10,
+    preyEnergy: 1.5,
+    fecundity: 2.4,
+    size: 'large',
+    lifespan: 240,
     reproThreshold: 2.4,
     reproCost: 1.2,
     reproCooldown: 7,
-    vision: 10,
     nightSpeedMul: 1.1,
     nightVisionMul: 1.1,
     radius: 0.38,
     initEnergy: 1.5,
     offspringEnergy: 1.1,
     wanderFactor: 1.3,
-    diet: { HERB: { energy: 0.9 }, RODENT: { energy: 0.8 } }
+    diet: { HERB: true, RODENT: true }
   },
   POLLINATOR: {
-    start: 0,
+    start: 16,
     baseSpeed: 0.5,
     hungerRate: 0.01,
+    vision: 4,
+    preyEnergy: 0.5,
+    fecundity: 1.0,
+    size: 'small',
+    lifespan: 160,
     reproThreshold: 1.0,
     reproCost: 0.5,
     reproCooldown: 5,
-    vision: 4,
     nightSpeedMul: 1.0,
     nightVisionMul: 1.0,
     radius: 0.28,
     initEnergy: 0.8,
     offspringEnergy: 0.6,
     wanderFactor: 2.0,
-    diet: { PLANT: { energy: 0.1, plantDelta: 0.05 } }
+    diet: { PLANT: { energy: 0.05, plantDelta: 0.005 } }
   }
 };
 
@@ -304,12 +325,13 @@ function spawnAnimals(){
 // Genera genes con RNG opcional; si no hay rngFn, usa Math.random
 function defaultGenes(species, rngFn){
   const R = typeof rngFn === 'function' ? rngFn : Math.random;
+  const base = speciesConfig[species].lifespan || 200;
   return {
     // Multiplicadores acotados respecto al valor base de la especie
     speedMul: clamp(0.95 + R()*0.10, 0.75, 1.35),
     metabolismMul: clamp(0.90 + R()*0.20, 0.70, 1.50),
     visionMul: clamp(0.90 + R()*0.20, 0.70, 1.60),
-    lifespan: 160 + Math.floor(R()*80) // 160..240 segundos de vida
+    lifespan: Math.floor(base * (0.8 + R()*0.4)) // 80%-120% del promedio
   };
 }
 
@@ -352,6 +374,21 @@ const METEOR_RADIUS = 6;    // Radio en tiles del impacto de meteorito
 function growPlants(){
   // Regla local de crecimiento con factores: noche, clima, vecindad y agua cercana
   const night = isNight();
+
+  // Pre-calcula tiles visitados por polinizadores (afecta crecimiento)
+  pollinatorBoost.fill(0);
+  for (const a of animals){
+    if (a.sp !== 'POLLINATOR') continue;
+    const tx = Math.floor(a.x);
+    const ty = Math.floor(a.y);
+    for(let dy=-1; dy<=1; dy++){
+      for(let dx=-1; dx<=1; dx++){
+        const nx = clamp(tx+dx, 0, WORLD_W-1);
+        const ny = clamp(ty+dy, 0, WORLD_H-1);
+        pollinatorBoost[idx(nx,ny)] = 1;
+      }
+    }
+  }
   for(let y=0; y<WORLD_H; y++){
     for(let x=0; x<WORLD_W; x++){
       const id = idx(x,y);
@@ -379,6 +416,7 @@ function growPlants(){
         if (nearWater) break;
       }
       if (nearWater) inc += 0.02;
+      if (pollinatorBoost[id]) inc += 0.03; // Polinizadores aceleran crecimiento
       // Competencia local: reduce crecimiento proporcional al promedio de vecinos
       let neigh = 0, sum = 0;
       for(let dy=-1; dy<=1; dy++){
@@ -674,8 +712,14 @@ function runSelfTests(){
   // Poblaciones iniciales
   const h0 = animals.filter(a=>a.sp==='HERB').length;
   const c0 = animals.filter(a=>a.sp==='CARN').length;
+  const r0 = animals.filter(a=>a.sp==='RODENT').length;
+  const w0 = animals.filter(a=>a.sp==='WOLF').length;
+  const p0 = animals.filter(a=>a.sp==='POLLINATOR').length;
   add('HERB_START', h0 === speciesConfig.HERB.start, `h0=${h0}`);
   add('CARN_START', c0 === speciesConfig.CARN.start, `c0=${c0}`);
+  add('RODENT_START', r0 === speciesConfig.RODENT.start, `r0=${r0}`);
+  add('WOLF_START', w0 === speciesConfig.WOLF.start, `w0=${w0}`);
+  add('POLL_START', p0 === speciesConfig.POLLINATOR.start, `p0=${p0}`);
 
   // UI básica presente
   add('Toolbar presente', !!document.getElementById('toolbar'));

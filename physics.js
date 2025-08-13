@@ -113,8 +113,8 @@ export function step(state, dt){
     state.eatPlant(a);
 
     if (prey && state.dist2(a, prey) < (a.r*state.TILE + prey.r*state.TILE) * (a.r*state.TILE + prey.r*state.TILE)){
-      const diet = cfg.diet[prey.sp];
-      if (diet) a.energy += diet.energy;
+      const dietEntry = cfg.diet[prey.sp];
+      if (dietEntry) a.energy += state.speciesConfig[prey.sp].preyEnergy;
       const idxPrey = state.animals.indexOf(prey);
       if (idxPrey !== -1) state.animals.splice(idxPrey,1);
     }
