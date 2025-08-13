@@ -45,10 +45,10 @@ export function applyActionAt(state,x,y,action){
       if (state.terrain[id]===state.BIOME.GRASS){ state.plant[id] = state.clamp(state.plant[id] + 0.35, 0, 1); }
       break;
     case state.TOOL.WATER:
-      state.terrain[id] = state.BIOME.WATER; state.plant[id] = 0;
+      state.terrain[id] = state.BIOME.WATER; state.plant[id] = 0; state.redrawTerrain = true;
       break;
     case state.TOOL.BARRIER:
-      state.terrain[id] = state.BIOME.BARRIER; state.plant[id] = 0;
+      state.terrain[id] = state.BIOME.BARRIER; state.plant[id] = 0; state.redrawTerrain = true;
       break;
     case state.TOOL.INSPECT: {
       const nearest = nearestAnimalTo(state,x+0.5,y+0.5,3);
