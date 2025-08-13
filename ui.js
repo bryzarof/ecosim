@@ -20,73 +20,82 @@ function handleAt(state, e){
   applyActionAt(state,x,y,state.activeTool);
 }
 
+const spawners = {
+  [TOOL.ADD_HERB]: (state, x, y) => {
+    const cfg = state.speciesConfig.HERB;
+    state.animals.push({
+      sp: 'HERB', x: x + 0.5, y: y + 0.5, dir: Math.random() * Math.PI * 2,
+      speed: cfg.baseSpeed, wobble: 0.4, r: cfg.radius, energy: cfg.addEnergy ?? cfg.initEnergy, cooldown: 0, age: 0,
+      genes: state.defaultGenes('HERB')
+    });
+  },
+  [TOOL.ADD_CARN]: (state, x, y) => {
+    const cfg = state.speciesConfig.CARN;
+    state.animals.push({
+      sp: 'CARN', x: x + 0.5, y: y + 0.5, dir: Math.random() * Math.PI * 2,
+      speed: cfg.baseSpeed, wobble: 0.4, r: cfg.radius, energy: cfg.addEnergy ?? cfg.initEnergy, cooldown: 0, age: 0,
+      genes: state.defaultGenes('CARN')
+    });
+  },
+  [TOOL.ADD_RODENT]: (state, x, y) => {
+    const cfg = state.speciesConfig.RODENT;
+    state.animals.push({
+      sp: 'RODENT', x: x + 0.5, y: y + 0.5, dir: Math.random() * Math.PI * 2,
+      speed: cfg.baseSpeed, wobble: 0.4, r: cfg.radius, energy: cfg.addEnergy ?? cfg.initEnergy, cooldown: 0, age: 0,
+      genes: state.defaultGenes('RODENT')
+    });
+  },
+  [TOOL.ADD_WOLF]: (state, x, y) => {
+    const cfg = state.speciesConfig.WOLF;
+    state.animals.push({
+      sp: 'WOLF', x: x + 0.5, y: y + 0.5, dir: Math.random() * Math.PI * 2,
+      speed: cfg.baseSpeed, wobble: 0.4, r: cfg.radius, energy: cfg.addEnergy ?? cfg.initEnergy, cooldown: 0, age: 0,
+      genes: state.defaultGenes('WOLF')
+    });
+  },
+  [TOOL.ADD_POLLINATOR]: (state, x, y) => {
+    const cfg = state.speciesConfig.POLLINATOR;
+    state.animals.push({
+      sp: 'POLLINATOR', x: x + 0.5, y: y + 0.5, dir: Math.random() * Math.PI * 2,
+      speed: cfg.baseSpeed, wobble: 0.4, r: cfg.radius, energy: cfg.addEnergy ?? cfg.initEnergy, cooldown: 0, age: 0,
+      genes: state.defaultGenes('POLLINATOR')
+    });
+  },
+  [TOOL.ERASER]: (state, x, y) => {
+    const r = 2; const r2 = r * r;
+    for (let i = state.animals.length - 1; i >= 0; i--) {
+      const a = state.animals[i];
+      const dx = a.x - (x + 0.5), dy = a.y - (y + 0.5);
+      if (dx * dx + dy * dy < r2) state.animals.splice(i, 1);
+    }
+  },
+  [TOOL.FOOD]: (state, x, y, id) => {
+    if (state.terrain[id] === state.BIOME.GRASS) {
+      state.plant[id] = state.clamp(state.plant[id] + 0.35, 0, 1);
+    }
+  },
+  [TOOL.WATER]: (state, x, y, id) => {
+    state.terrain[id] = state.BIOME.WATER;
+    state.plant[id] = 0;
+    state.redrawTerrain = true;
+  },
+  [TOOL.BARRIER]: (state, x, y, id) => {
+    state.terrain[id] = state.BIOME.BARRIER;
+    state.plant[id] = 0;
+    state.redrawTerrain = true;
+  },
+  [TOOL.INSPECT]: (state, x, y) => {
+    const nearest = nearestAnimalTo(state, x + 0.5, y + 0.5, 3);
+    if (nearest) {
+      console.log('Animal', { sp: nearest.sp, x: nearest.x, y: nearest.y, energy: nearest.energy, age: nearest.age, genes: nearest.genes });
+    }
+  }
+};
+
 export function applyActionAt(state,x,y,action){
   const id = state.idx(x,y);
-  switch(action){
-    case TOOL.ADD_HERB: {
-      const cfg = state.speciesConfig.HERB;
-      state.animals.push({
-        sp: 'HERB', x:x+0.5, y:y+0.5, dir:Math.random()*Math.PI*2,
-        speed: cfg.baseSpeed, wobble: 0.4, r:cfg.radius, energy:cfg.addEnergy ?? cfg.initEnergy, cooldown:0, age:0,
-        genes: state.defaultGenes('HERB')
-      });
-      break; }
-    case TOOL.ADD_CARN: {
-      const cfg = state.speciesConfig.CARN;
-      state.animals.push({
-        sp: 'CARN', x:x+0.5, y:y+0.5, dir:Math.random()*Math.PI*2,
-        speed: cfg.baseSpeed, wobble: 0.4, r:cfg.radius, energy:cfg.addEnergy ?? cfg.initEnergy, cooldown:0, age:0,
-        genes: state.defaultGenes('CARN')
-      });
-      break; }
-    case TOOL.ADD_RODENT: {
-      const cfg = state.speciesConfig.RODENT;
-      state.animals.push({
-        sp: 'RODENT', x:x+0.5, y:y+0.5, dir:Math.random()*Math.PI*2,
-        speed: cfg.baseSpeed, wobble: 0.4, r:cfg.radius, energy:cfg.addEnergy ?? cfg.initEnergy, cooldown:0, age:0,
-        genes: state.defaultGenes('RODENT')
-      });
-      break; }
-    case TOOL.ADD_WOLF: {
-      const cfg = state.speciesConfig.WOLF;
-      state.animals.push({
-        sp: 'WOLF', x:x+0.5, y:y+0.5, dir:Math.random()*Math.PI*2,
-        speed: cfg.baseSpeed, wobble: 0.4, r:cfg.radius, energy:cfg.addEnergy ?? cfg.initEnergy, cooldown:0, age:0,
-        genes: state.defaultGenes('WOLF')
-      });
-      break; }
-    case TOOL.ADD_POLLINATOR: {
-      const cfg = state.speciesConfig.POLLINATOR;
-      state.animals.push({
-        sp: 'POLLINATOR', x:x+0.5, y:y+0.5, dir:Math.random()*Math.PI*2,
-        speed: cfg.baseSpeed, wobble: 0.4, r:cfg.radius, energy:cfg.addEnergy ?? cfg.initEnergy, cooldown:0, age:0,
-        genes: state.defaultGenes('POLLINATOR')
-      });
-      break; }
-    case TOOL.ERASER: {
-      const r=2; const r2=r*r;
-      for (let i=state.animals.length-1;i>=0;i--){
-        const a=state.animals[i];
-        const dx=a.x-(x+0.5), dy=a.y-(y+0.5);
-        if (dx*dx+dy*dy < r2) state.animals.splice(i,1);
-      }
-      break; }
-    case TOOL.FOOD:
-      if (state.terrain[id]===state.BIOME.GRASS){ state.plant[id] = state.clamp(state.plant[id] + 0.35, 0, 1); }
-      break;
-    case TOOL.WATER:
-      state.terrain[id] = state.BIOME.WATER; state.plant[id] = 0; state.redrawTerrain = true;
-      break;
-    case TOOL.BARRIER:
-      state.terrain[id] = state.BIOME.BARRIER; state.plant[id] = 0; state.redrawTerrain = true;
-      break;
-    case TOOL.INSPECT: {
-      const nearest = nearestAnimalTo(state,x+0.5,y+0.5,3);
-      if (nearest){
-        console.log('Animal', {sp:nearest.sp, x:nearest.x, y:nearest.y, energy:nearest.energy, age:nearest.age, genes:nearest.genes});
-      }
-      break; }
-  }
+  const fn = spawners[action];
+  if (fn) fn(state,x,y,id);
 }
 
 function nearestAnimalTo(state,x,y,maxR){
