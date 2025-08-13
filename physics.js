@@ -57,8 +57,15 @@ export function step(state, dt){
 
     a.energy -= hungerRate * dt;
     const vision = (cfg.vision * a.genes.visionMul) * visionNightMul;
-    const threat = state.nearestPredator(a, vision);
-    const prey = state.nearestPrey(a, vision);
+    const diet = cfg.diet || {};
+    const preySpecies = Object.keys(diet).filter(k => k !== 'PLANT');
+    const prey = preySpecies.length ? state.nearestOfSpecies(a, preySpecies, vision) : null;
+
+    const predators = [];
+    for (const [sp, scfg] of Object.entries(state.speciesConfig)) {
+      if (scfg.diet && scfg.diet[a.sp]) predators.push(sp);
+    }
+    const threat = predators.length ? state.nearestOfSpecies(a, predators, vision) : null;
 
     const tx = Math.floor(a.x);
     const ty = Math.floor(a.y);

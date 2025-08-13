@@ -488,6 +488,7 @@ function dist2(a,b){
 }
 function nearestOfSpecies(from, speciesList, visionTiles){
   // Busca el individuo más cercano de entre una lista de especies
+  const targets = new Set(speciesList);
   const gSize = GRID_SIZE;
   const gx = Math.floor(from.x / gSize);
   const gy = Math.floor(from.y / gSize);
@@ -497,27 +498,13 @@ function nearestOfSpecies(from, speciesList, visionTiles){
     for(let xx=Math.max(0,gx-rad); xx<=Math.min(GRID_W-1,gx+rad); xx++){
       const cell = grid[cellIndex(xx,yy)];
       for(const b of cell){
-        if (!speciesList.includes(b.sp)) continue;
+        if (!targets.has(b.sp)) continue;
         const d2 = dist2(from,b);
         if (d2 < bestD){ bestD = d2; best = b; }
       }
     }
   }
   return best;
-}
-function nearestPrey(pred, visionTiles){
-  const diet = speciesConfig[pred.sp].diet;
-  const preyList = Object.keys(diet).filter(k=>k!== 'PLANT');
-  if (preyList.length===0) return null;
-  return nearestOfSpecies(pred, preyList, visionTiles);
-}
-function nearestPredator(animal, visionTiles){
-  const predators = [];
-  for (const [sp,cfg] of Object.entries(speciesConfig)){
-    if (cfg.diet && cfg.diet[animal.sp]) predators.push(sp);
-  }
-  if (predators.length===0) return null;
-  return nearestOfSpecies(animal, predators, visionTiles);
 }
 function mutate(val, sigma, min, max){
   // Mutación uniforme acotada (simple y robusta)
@@ -623,7 +610,7 @@ const state = {
   spawnRate, reproThresholdMul, mortalityMul,
   idx, clamp, WEATHER, WEATHER_NAMES, BIOME, COLORS,
   TOOL, defaultGenes, advanceWeather, growPlants, isNight,
-  nearestPredator, nearestPrey, moveCreature, clampInside,
+  nearestOfSpecies, moveCreature, clampInside,
   eatPlant, reproduce, dist2, daylightFactor,
   triggerFireCenter, strikeMeteor, plague,
   toolbar, cvs, ctx,
