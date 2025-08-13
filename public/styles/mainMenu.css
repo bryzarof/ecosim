@@ -25,6 +25,12 @@
   pointer-events: none;
 }
 
+#mainMenuLogo {
+  width: 200px;
+  height: auto;
+  margin-bottom: 2rem;
+}
+
 #mainMenu button {
   margin: 0.5rem;
   padding: 0.75rem 2rem;
