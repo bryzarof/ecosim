@@ -5,6 +5,8 @@ import { setupUI, setTool, applyActionAt } from './ui.js';
 import { sprites } from './sprites.js';
 import { initHUD, updateHUD } from './hud.js';
 import { initSidebar } from './sidebar.js';
+import { initMinimap, updateMinimap } from './minimap.js';
+let state;
 // ==============================================================
 //                    PARÁMETROS DEL MUNDO
 // ==============================================================
@@ -189,6 +191,8 @@ const clamp = (v, a, b)=> Math.max(a, Math.min(b, v)); // Limita v al rango [a,b
 const cvs = document.getElementById('sim');
 const ctx = cvs.getContext('2d', { alpha:false });
 
+let camX = 0, camY = 0, scale = 1;
+
 function resizeCanvas() {
   const worldPxW = WORLD_W * TILE;
   const worldPxH = WORLD_H * TILE;
@@ -198,10 +202,11 @@ function resizeCanvas() {
   cvs.height = Math.floor(window.innerHeight * DPR);
 
   // Escala para ajustar el mundo al tamaño visible
-  const scale = Math.min(window.innerWidth / worldPxW, window.innerHeight / worldPxH);
+  scale = Math.min(window.innerWidth / worldPxW, window.innerHeight / worldPxH);
 
   ctx.imageSmoothingEnabled = false;           // Look pixel-art
-  ctx.setTransform(scale * DPR, 0, 0, scale * DPR, 0, 0);
+  ctx.setTransform(scale * DPR, 0, 0, scale * DPR, -camX * TILE * scale * DPR, -camY * TILE * scale * DPR);
+  if (state) state.scale = scale;
 }
 resizeCanvas();
 window.addEventListener('resize', resizeCanvas);
@@ -587,7 +592,7 @@ function plague(species, ratio){
 let flashTimer = 0; // Cuenta atrás del flash de meteorito
 
 // Objeto de estado compartido entre módulos
-const state = {
+state = {
   get simTime(){ return simTime; },
   set simTime(v){ simTime = v; },
   get worldTime(){ return worldTime; },
@@ -613,6 +618,9 @@ const state = {
   eatPlant, reproduce, dist2, daylightFactor,
   triggerFireCenter, strikeMeteor, plague,
   toolbar, sidebar, cvs, ctx,
+  camX, camY, scale, DPR,
+  applyCamera(){ camX = state.camX; camY = state.camY; resizeCanvas(); },
+  minimap:null,
   sprites,
   crowdSmall, crowdMedium, crowdLarge,
   CROWD_THRESH, CROWD_DECAY, SMALL_LIMIT, LARGE_LIMIT,
@@ -643,6 +651,7 @@ function loop(now){
 
   step(state, dt);    // Actualización de estado
   render(state);      // Dibujo de frame
+  updateMinimap(state);
 
   // UI cada ~0.5s
   frames++; fpsTime += dt;
@@ -663,6 +672,7 @@ function loop(now){
 setupUI(state);
 initHUD(state);
 initSidebar(state);
+initMinimap(state);
 generateTerrain();                 // Crea el mapa base
 generateSoilMoisture();            // Inicializa humedad del suelo
 spawnAnimals();                    // Población inicial
