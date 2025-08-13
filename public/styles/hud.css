@@ -1,0 +1,7 @@
+#hud {
+  background: rgba(0,0,0,0.6);
+  color: var(--green);
+  display: flex;
+  align-items: center;
+  padding: 8px 12px;
+}

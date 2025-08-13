@@ -1,30 +1,51 @@
-/*
-  ===== Estilos base y responsive mínimos =====
-  - Paleta oscura, tipografía del sistema
-  - Layout fluido con contenedor centrado
-  - Botones de toolbar con estados activos
-*/
-:root { --bg:#121212; --fg:#e5e5e5; --accent:#4ade80; }
+/* Base styles for ecosystem UI */
+:root {
+  --bg:#121212;
+  --fg:#e5e5e5;
+  --accent:#4ade80;
+  --green:#16a34a;
+  --brown:#92400e;
+  --blue:#2563eb;
+}
 * { box-sizing: border-box; }
-html, body { height:100%; margin:0; overflow:hidden; background:var(--bg); color:var(--fg); font-family:ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, Noto Sans, Arial, "Apple Color Emoji","Segoe UI Emoji"; }
-.wrap { width:100vw; height:100vh; }
+html, body {
+  height:100%;
+  margin:0;
+  overflow:hidden;
+  background:var(--bg);
+  color:var(--fg);
+  font-family:ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, Noto Sans, Arial, "Apple Color Emoji","Segoe UI Emoji";
+}
+body { position:relative; }
+#worldCanvas {
+  width:100%;
+  height:100%;
+  display:block;
+  background:#000;
+  image-rendering:pixelated;
+}
 
-header { position:fixed; top:10px; left:50%; transform:translateX(-50%); z-index:5; }
-#hud { background:rgba(0,0,0,0.5); padding:6px 10px; border-radius:8px; display:flex; gap:12px; align-items:center; }
-.stat { font-variant-numeric:tabular-nums; }
-#debugPanel { margin-top:8px; background:rgba(0,0,0,0.6); padding:6px 10px; border-radius:8px; display:flex; gap:10px; font-size:12px; }
-.hidden { display:none; }
-#speciesPanel { margin-top:8px; background:rgba(0,0,0,0.6); padding:6px 10px; border-radius:8px; display:flex; flex-direction:column; gap:4px; font-size:12px; }
-#speciesPanel .sp { display:flex; align-items:center; gap:4px; }
-#speciesPanel .icon { width:16px; }
+/* Base layout */
+#hud {
+  position:absolute;
+  top:0;
+  left:0;
+  right:0;
+  height:60px;
+}
 
-.toolbar { position:fixed; left:10px; top:50%; transform:translateY(-50%); display:flex; flex-direction:column; gap:8px; background:rgba(0,0,0,0.4); padding:8px; border-radius:12px; z-index:5; }
-.toolbar .divider { height:1px; background:rgba(255,255,255,0.2); margin:4px 0; }
-.btn { background:rgba(0,0,0,0.6); border:1px solid rgba(255,255,255,0.2); color:var(--fg); width:44px; height:44px; border-radius:10px; font-size:22px; line-height:1; display:flex; align-items:center; justify-content:center; cursor:pointer; transition:transform .1s, background .1s; }
-.btn:hover { transform:scale(1.1); background:rgba(255,255,255,0.1); }
-.btn.active { border-color:var(--accent); box-shadow:0 0 0 2px var(--accent) inset; }
-.btn.danger { border-color:#f87171; color:#fecaca; }
+#sidebar {
+  position:absolute;
+  top:60px;
+  bottom:0;
+  left:0;
+  width:220px;
+}
 
-canvas { width:100vw; height:100vh; display:block; background:#000; image-rendering:pixelated; }
-.tests { position:fixed; right:10px; top:10px; background:rgba(0,0,0,0.6); border:1px solid rgba(255,255,255,0.2); border-radius:10px; padding:8px 10px; font-size:12px; color:var(--fg); box-shadow:0 6px 20px rgba(0,0,0,.25); z-index:10; }
-.tests b { color:var(--accent); }
+#minimap {
+  position:absolute;
+  bottom:20px;
+  right:20px;
+  width:180px;
+  height:180px;
+}
