@@ -1,5 +1,6 @@
 import { initRadialMenu } from './src/ui/radialMenu.js';
 import { saveSettings } from './src/state/persistence.js';
+import { TOOL } from './main.js';
 
 export function setTool(state, t){
   state.activeTool = t;
@@ -22,7 +23,7 @@ function handleAt(state, e){
 export function applyActionAt(state,x,y,action){
   const id = state.idx(x,y);
   switch(action){
-    case state.TOOL.ADD_HERB: {
+    case TOOL.ADD_HERB: {
       const cfg = state.speciesConfig.HERB;
       state.animals.push({
         sp: 'HERB', x:x+0.5, y:y+0.5, dir:Math.random()*Math.PI*2,
@@ -30,7 +31,7 @@ export function applyActionAt(state,x,y,action){
         genes: state.defaultGenes('HERB')
       });
       break; }
-    case state.TOOL.ADD_CARN: {
+    case TOOL.ADD_CARN: {
       const cfg = state.speciesConfig.CARN;
       state.animals.push({
         sp: 'CARN', x:x+0.5, y:y+0.5, dir:Math.random()*Math.PI*2,
@@ -38,7 +39,31 @@ export function applyActionAt(state,x,y,action){
         genes: state.defaultGenes('CARN')
       });
       break; }
-    case state.TOOL.ERASER: {
+    case TOOL.ADD_RODENT: {
+      const cfg = state.speciesConfig.RODENT;
+      state.animals.push({
+        sp: 'RODENT', x:x+0.5, y:y+0.5, dir:Math.random()*Math.PI*2,
+        speed: cfg.baseSpeed, wobble: 0.4, r:cfg.radius, energy:cfg.addEnergy ?? cfg.initEnergy, cooldown:0, age:0,
+        genes: state.defaultGenes('RODENT')
+      });
+      break; }
+    case TOOL.ADD_WOLF: {
+      const cfg = state.speciesConfig.WOLF;
+      state.animals.push({
+        sp: 'WOLF', x:x+0.5, y:y+0.5, dir:Math.random()*Math.PI*2,
+        speed: cfg.baseSpeed, wobble: 0.4, r:cfg.radius, energy:cfg.addEnergy ?? cfg.initEnergy, cooldown:0, age:0,
+        genes: state.defaultGenes('WOLF')
+      });
+      break; }
+    case TOOL.ADD_POLLINATOR: {
+      const cfg = state.speciesConfig.POLLINATOR;
+      state.animals.push({
+        sp: 'POLLINATOR', x:x+0.5, y:y+0.5, dir:Math.random()*Math.PI*2,
+        speed: cfg.baseSpeed, wobble: 0.4, r:cfg.radius, energy:cfg.addEnergy ?? cfg.initEnergy, cooldown:0, age:0,
+        genes: state.defaultGenes('POLLINATOR')
+      });
+      break; }
+    case TOOL.ERASER: {
       const r=2; const r2=r*r;
       for (let i=state.animals.length-1;i>=0;i--){
         const a=state.animals[i];
@@ -46,16 +71,16 @@ export function applyActionAt(state,x,y,action){
         if (dx*dx+dy*dy < r2) state.animals.splice(i,1);
       }
       break; }
-    case state.TOOL.FOOD:
+    case TOOL.FOOD:
       if (state.terrain[id]===state.BIOME.GRASS){ state.plant[id] = state.clamp(state.plant[id] + 0.35, 0, 1); }
       break;
-    case state.TOOL.WATER:
+    case TOOL.WATER:
       state.terrain[id] = state.BIOME.WATER; state.plant[id] = 0; state.redrawTerrain = true;
       break;
-    case state.TOOL.BARRIER:
+    case TOOL.BARRIER:
       state.terrain[id] = state.BIOME.BARRIER; state.plant[id] = 0; state.redrawTerrain = true;
       break;
-    case state.TOOL.INSPECT: {
+    case TOOL.INSPECT: {
       const nearest = nearestAnimalTo(state,x+0.5,y+0.5,3);
       if (nearest){
         console.log('Animal', {sp:nearest.sp, x:nearest.x, y:nearest.y, energy:nearest.energy, age:nearest.age, genes:nearest.genes});
@@ -103,10 +128,13 @@ export function setupUI(state){
   const radialRoot = document.getElementById('radialMenu');
   if(radialRoot){
     initRadialMenu(radialRoot,[
-      { label:'\uD83D\uDD0D', onSelect:()=> setTool(state, state.TOOL.INSPECT) },
-      { label:'\uD83D\uDC07', onSelect:()=> setTool(state, state.TOOL.ADD_HERB) },
-      { label:'\uD83E\uDD8A', onSelect:()=> setTool(state, state.TOOL.ADD_CARN) },
-      { label:'\uD83C\uDF3F', onSelect:()=> setTool(state, state.TOOL.FOOD) }
+      { label:'\uD83D\uDD0D', onSelect:()=> setTool(state, TOOL.INSPECT) },
+      { label:'\uD83D\uDC07', onSelect:()=> setTool(state, TOOL.ADD_HERB) },
+      { label:'\uD83E\uDD8A', onSelect:()=> setTool(state, TOOL.ADD_CARN) },
+      { label:'\uD83D\uDC00', onSelect:()=> setTool(state, TOOL.ADD_RODENT) },
+      { label:'\uD83D\uDC3A', onSelect:()=> setTool(state, TOOL.ADD_WOLF) },
+      { label:'\uD83D\uDC1D', onSelect:()=> setTool(state, TOOL.ADD_POLLINATOR) },
+      { label:'\uD83C\uDF3F', onSelect:()=> setTool(state, TOOL.FOOD) }
     ]);
   }
 
