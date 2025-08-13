@@ -684,6 +684,10 @@ const debugPanel = document.getElementById('debugPanel');
 document.getElementById('debugBtn').addEventListener('click', () => debugPanel.classList.toggle('hidden'));
 window.addEventListener('keydown', e=>{ if(e.key==='d' || e.key==='D') debugPanel.classList.toggle('hidden'); });
 
+const speciesPanel = document.getElementById('speciesPanel');
+const speciesBtn = document.getElementById('speciesBtn');
+speciesBtn.addEventListener('click', () => speciesPanel.classList.toggle('hidden'));
+
 function loop(now){
   if (state.paused){ last = now; requestAnimationFrame(loop); return; }
   const dt = Math.min(0.05, (now - last)/1000); // Delta tiempo con tope (50ms) para estabilidad
