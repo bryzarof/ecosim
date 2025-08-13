@@ -8,7 +8,7 @@ import { initSidebar } from './sidebar.js';
 import { initMinimap, updateMinimap } from './minimap.js';
 import { initMainMenu } from './src/ui/mainMenu.js';
 import { loadSettings, saveSettings } from './src/state/persistence.js';
-import { gsap } from 'gsap';
+import { gsap } from 'https://cdn.jsdelivr.net/npm/gsap@3.13.0/index.js';
 let state;
 // ==============================================================
 //                    PARÁMETROS DEL MUNDO
