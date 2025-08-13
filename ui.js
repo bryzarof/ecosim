@@ -19,20 +19,22 @@ function handleAt(state, e){
 export function applyActionAt(state,x,y,action){
   const id = state.idx(x,y);
   switch(action){
-    case state.TOOL.ADD_HERB:
+    case state.TOOL.ADD_HERB: {
+      const cfg = state.speciesConfig.HERB;
       state.animals.push({
-        sp: state.SPECIES.HERB, x:x+0.5, y:y+0.5, dir:Math.random()*Math.PI*2,
-        speed: state.HERB.baseSpeed, wobble: 0.4, r:0.32, energy:1.0, cooldown:0, age:0,
-        genes: state.defaultGenes(state.SPECIES.HERB)
+        sp: 'HERB', x:x+0.5, y:y+0.5, dir:Math.random()*Math.PI*2,
+        speed: cfg.baseSpeed, wobble: 0.4, r:cfg.radius, energy:cfg.addEnergy ?? cfg.initEnergy, cooldown:0, age:0,
+        genes: state.defaultGenes('HERB')
       });
-      break;
-    case state.TOOL.ADD_CARN:
+      break; }
+    case state.TOOL.ADD_CARN: {
+      const cfg = state.speciesConfig.CARN;
       state.animals.push({
-        sp: state.SPECIES.CARN, x:x+0.5, y:y+0.5, dir:Math.random()*Math.PI*2,
-        speed: state.CARN.baseSpeed, wobble: 0.4, r:0.36, energy:1.2, cooldown:0, age:0,
-        genes: state.defaultGenes(state.SPECIES.CARN)
+        sp: 'CARN', x:x+0.5, y:y+0.5, dir:Math.random()*Math.PI*2,
+        speed: cfg.baseSpeed, wobble: 0.4, r:cfg.radius, energy:cfg.addEnergy ?? cfg.initEnergy, cooldown:0, age:0,
+        genes: state.defaultGenes('CARN')
       });
-      break;
+      break; }
     case state.TOOL.ERASER: {
       const r=2; const r2=r*r;
       for (let i=state.animals.length-1;i>=0;i--){
@@ -53,7 +55,7 @@ export function applyActionAt(state,x,y,action){
     case state.TOOL.INSPECT: {
       const nearest = nearestAnimalTo(state,x+0.5,y+0.5,3);
       if (nearest){
-        console.log('Animal', {sp:nearest.sp===state.SPECIES.HERB?'HERB':'CARN', x:nearest.x, y:nearest.y, energy:nearest.energy, age:nearest.age, genes:nearest.genes});
+        console.log('Animal', {sp:nearest.sp, x:nearest.x, y:nearest.y, energy:nearest.energy, age:nearest.age, genes:nearest.genes});
       }
       break; }
   }
@@ -84,12 +86,12 @@ export function setupUI(state){
     if(map[e.key]) setTool(state, map[e.key]);
     else if(e.key==='f' || e.key==='F') state.triggerFireCenter();
     else if(e.key==='m' || e.key==='M') state.strikeMeteor();
-    else if(e.key==='p' || e.key==='P') state.plague(state.SPECIES.HERB,0.35);
-    else if(e.key==='o' || e.key==='O') state.plague(state.SPECIES.CARN,0.5);
+    else if(e.key==='p' || e.key==='P') state.plague('HERB',0.35);
+    else if(e.key==='o' || e.key==='O') state.plague('CARN',0.5);
   });
 
   document.getElementById('evtFire').addEventListener('click', state.triggerFireCenter);
   document.getElementById('evtMeteor').addEventListener('click', state.strikeMeteor);
-  document.getElementById('evtPlagueH').addEventListener('click', ()=> state.plague(state.SPECIES.HERB,0.35));
-  document.getElementById('evtPlagueC').addEventListener('click', ()=> state.plague(state.SPECIES.CARN,0.5));
+  document.getElementById('evtPlagueH').addEventListener('click', ()=> state.plague('HERB',0.35));
+  document.getElementById('evtPlagueC').addEventListener('click', ()=> state.plague('CARN',0.5));
 }

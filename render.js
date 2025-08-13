@@ -1,5 +1,5 @@
 export function render(state){
-  const { ctx, WORLD_W, WORLD_H, TILE, terrain, plant, BIOME, animals, SPECIES, weatherState, WEATHER, fire, sprites } = state;
+  const { ctx, WORLD_W, WORLD_H, TILE, terrain, plant, BIOME, animals, speciesConfig, weatherState, WEATHER, fire, sprites } = state;
   let { flashTimer } = state;
 
   // Pre-rendered terrain layer for performance
@@ -39,7 +39,7 @@ export function render(state){
   // Animated animal sprites
   const frame = Math.floor(state.simTime*6)%2;
   for(const a of animals){
-    const imgSet = (a.sp===SPECIES.HERB)? sprites.herb : sprites.carn;
+    const imgSet = sprites[a.sp.toLowerCase()] || sprites.herb;
     const img = imgSet[frame];
     const size = a.r*2*TILE;
     ctx.save();
