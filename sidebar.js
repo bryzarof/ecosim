@@ -1,3 +1,5 @@
+import { saveSettings } from './src/state/persistence.js';
+
 export function initSidebar(state){
   const sidebar = document.getElementById('sidebar');
   if(!sidebar) return;
@@ -28,7 +30,8 @@ export function initSidebar(state){
     details.appendChild(summary);
     details.appendChild(panel);
 
-    if (localStorage.getItem(`sidebar-${sec.id}`) === '1') {
+    const sidebarSettings = state.settings.sidebar || {};
+    if (sidebarSettings[sec.id] === 1) {
       details.open = true;
     }
 
@@ -36,7 +39,10 @@ export function initSidebar(state){
       if (details.open) {
         detailElements.forEach(d => { if (d !== details) d.open = false; });
       }
-      localStorage.setItem(`sidebar-${sec.id}`, details.open ? '1' : '0');
+      const s = state.settings.sidebar || {};
+      s[sec.id] = details.open ? 1 : 0;
+      state.settings.sidebar = s;
+      saveSettings(state.settings);
     });
 
     sidebar.appendChild(details);

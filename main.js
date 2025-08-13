@@ -7,6 +7,7 @@ import { initHUD, updateHUD } from './hud.js';
 import { initSidebar } from './sidebar.js';
 import { initMinimap, updateMinimap } from './minimap.js';
 import { initMainMenu } from './src/ui/mainMenu.js';
+import { loadSettings, saveSettings } from './src/state/persistence.js';
 import { gsap } from 'gsap';
 let state;
 // ==============================================================
@@ -175,6 +176,14 @@ const hiddenSpecies = Object.fromEntries(speciesList.map(s=>[s,false]));
 const spawnRate = Object.fromEntries(speciesList.map(s=>[s,1]));
 const reproThresholdMul = Object.fromEntries(speciesList.map(s=>[s,1]));
 const mortalityMul = Object.fromEntries(speciesList.map(s=>[s,1]));
+
+// Load persisted settings and merge with defaults
+const settings = loadSettings();
+if (settings.spawnEnabled) Object.assign(spawnEnabled, settings.spawnEnabled);
+if (settings.hiddenSpecies) Object.assign(hiddenSpecies, settings.hiddenSpecies);
+if (settings.spawnRate) Object.assign(spawnRate, settings.spawnRate);
+if (settings.reproThresholdMul) Object.assign(reproThresholdMul, settings.reproThresholdMul);
+if (settings.mortalityMul) Object.assign(mortalityMul, settings.mortalityMul);
 
 // Spatial grid for neighborhood queries (optimizes nearest searches)
 const GRID_SIZE = 10; // tiles per cell
@@ -631,8 +640,21 @@ state = {
   grid, GRID_SIZE, GRID_W, GRID_H, cellIndex,
   activeTool: TOOL.INSPECT,
   hud:null,
-  paused:false
+  paused: settings.paused ?? false
 };
+
+// store settings in state for modules to access
+state.settings = Object.assign({}, settings, {
+  spawnEnabled,
+  hiddenSpecies,
+  spawnRate,
+  reproThresholdMul,
+  mortalityMul
+});
+state.settings.sidebar = state.settings.sidebar || {};
+
+// persist settings when leaving the page
+window.addEventListener('beforeunload', () => saveSettings(state.settings));
 
 // ==============================================================
 //                        BUCLE PRINCIPAL

@@ -1,4 +1,5 @@
 import { gsap } from 'gsap';
+import { saveSettings } from './src/state/persistence.js';
 
 export function initHUD(state) {
   const hud = document.getElementById('hud');
@@ -6,7 +7,7 @@ export function initHUD(state) {
 
   const playBtn = document.createElement('button');
   playBtn.id = 'playPause';
-  playBtn.textContent = '⏸️';
+  playBtn.textContent = state.paused ? '▶️' : '⏸️';
   hud.appendChild(playBtn);
 
   const clock = document.createElement('span');
@@ -52,6 +53,10 @@ export function initHUD(state) {
   playBtn.addEventListener('click', () => {
     state.paused = !state.paused;
     playBtn.textContent = state.paused ? '▶️' : '⏸️';
+    if (state.settings) {
+      state.settings.paused = state.paused;
+      saveSettings(state.settings);
+    }
   });
 
   state.hud = { playBtn, clock, weather, herbCount, carnCount, plantCount };
