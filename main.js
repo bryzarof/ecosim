@@ -2,6 +2,7 @@
 import { step } from './physics.js';
 import { render } from './render.js';
 import { setupUI, setTool, applyActionAt } from './ui.js';
+import { sprites } from './sprites.js';
 // ==============================================================
 //                    PARÁMETROS DEL MUNDO
 // ==============================================================
@@ -63,6 +64,13 @@ const CARN = {
 
 // Array dinámico de individuos; cada uno es un objeto con estado y genes
 const animals = [];
+
+// Spatial grid for neighborhood queries (optimizes nearest searches)
+const GRID_SIZE = 10; // tiles per cell
+const GRID_W = Math.ceil(WORLD_W / GRID_SIZE);
+const GRID_H = Math.ceil(WORLD_H / GRID_SIZE);
+const cellIndex = (gx, gy)=> gy*GRID_W + gx;
+const grid = Array.from({length: GRID_W*GRID_H}, () => []);
 
 // Utilidades cortas para índices y límites
 const idx = (x,y)=> y*WORLD_W + x;                   // Indexa (x,y) en arreglos lineales
@@ -330,21 +338,39 @@ function dist2(a,b){
   return dx*dx + dy*dy;
 }
 function nearestHerbivore(pred, visionTiles){
-  // Busca el herbívoro más cercano dentro del radio de visión
+  // Busca el herbívoro más cercano usando la grilla espacial
+  const gSize = GRID_SIZE;
+  const gx = Math.floor(pred.x / gSize);
+  const gy = Math.floor(pred.y / gSize);
+  const rad = Math.ceil(visionTiles / gSize);
   let best=null, bestD = (visionTiles*TILE)*(visionTiles*TILE);
-  for(const b of animals){
-    if (b.sp!==SPECIES.HERB) continue;
-    const d2 = dist2(pred,b);
-    if (d2 < bestD){ bestD = d2; best = b; }
+  for(let yy=Math.max(0,gy-rad); yy<=Math.min(GRID_H-1,gy+rad); yy++){
+    for(let xx=Math.max(0,gx-rad); xx<=Math.min(GRID_W-1,gx+rad); xx++){
+      const cell = grid[cellIndex(xx,yy)];
+      for(const b of cell){
+        if (b.sp!==SPECIES.HERB) continue;
+        const d2 = dist2(pred,b);
+        if (d2 < bestD){ bestD = d2; best = b; }
+      }
+    }
   }
   return best;
 }
 function nearestPredator(h, visionTiles){
-  // Devuelve un depredador si entra al radio de visión
-  for(const b of animals){
-    if (b.sp!==SPECIES.CARN) continue;
-    const d2 = dist2(h,b);
-    if (d2 < (visionTiles*TILE)*(visionTiles*TILE)) return b;
+  // Devuelve un depredador cercano usando la grilla espacial
+  const gSize = GRID_SIZE;
+  const gx = Math.floor(h.x / gSize);
+  const gy = Math.floor(h.y / gSize);
+  const rad = Math.ceil(visionTiles / gSize);
+  for(let yy=Math.max(0,gy-rad); yy<=Math.min(GRID_H-1,gy+rad); yy++){
+    for(let xx=Math.max(0,gx-rad); xx<=Math.min(GRID_W-1,gx+rad); xx++){
+      const cell = grid[cellIndex(xx,yy)];
+      for(const b of cell){
+        if (b.sp!==SPECIES.CARN) continue;
+        const d2 = dist2(h,b);
+        if (d2 < (visionTiles*TILE)*(visionTiles*TILE)) return b;
+      }
+    }
   }
   return null;
 }
@@ -414,6 +440,7 @@ function strikeMeteor(){
   }
   // Flash visual breve para feedback
   flashTimer = 0.3;
+  state.redrawTerrain = true;
 }
 function plague(species, ratio){
   // Elimina aleatoriamente un % (ratio) de la especie indicada
@@ -452,6 +479,10 @@ const state = {
   eatPlant, reproduce, dist2, daylightFactor,
   triggerFireCenter, strikeMeteor, plague,
   toolbar, cvs, ctx,
+  sprites,
+  terrainCanvas:null,
+  redrawTerrain:true,
+  grid, GRID_SIZE, GRID_W, GRID_H, cellIndex,
   activeTool: TOOL.INSPECT
 };
 
