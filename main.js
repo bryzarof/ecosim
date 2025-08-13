@@ -199,7 +199,11 @@ const clamp = (v, a, b)=> Math.max(a, Math.min(b, v)); // Limita v al rango [a,b
 // ==============================================================
 //                         CANVAS SETUP
 // ==============================================================
-const cvs = document.getElementById('worldCanvas');
+const cvs = document.getElementById('sim');
+if (!cvs) {
+  console.error('Canvas element with id "sim" not found');
+  throw new Error('Canvas element with id "sim" not found');
+}
 const ctx = cvs.getContext('2d', { alpha:false });
 
 let camX = 0, camY = 0, scale = 1;
