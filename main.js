@@ -491,10 +491,15 @@ const state = {
 // ==============================================================
 let frames=0, fps=0, fpsTime=0; // Medición de FPS a 0.5s
 const $fps = document.getElementById('fps');
-const $count = document.getElementById('count');
+const $herb = document.getElementById('herbCount');
+const $carn = document.getElementById('carnCount');
+const $plant = document.getElementById('plantCount');
 const $tick = document.getElementById('tick');
 const $clock = document.getElementById('clock');
 const $weather = document.getElementById('weather');
+const debugPanel = document.getElementById('debugPanel');
+document.getElementById('debugBtn').addEventListener('click', () => debugPanel.classList.toggle('hidden'));
+window.addEventListener('keydown', e=>{ if(e.key==='d' || e.key==='D') debugPanel.classList.toggle('hidden'); });
 
 function loop(now){
   const dt = Math.min(0.05, (now - last)/1000); // Delta tiempo con tope (50ms) para estabilidad
@@ -511,7 +516,9 @@ function loop(now){
     const h = animals.filter(a=>a.sp===SPECIES.HERB).length;
     const c = animals.filter(a=>a.sp===SPECIES.CARN).length;
     $fps.textContent = `FPS: ${fps}`;
-    $count.textContent = `Herbívoros: ${h} · Carnívoros: ${c} · Plantas densas: ${countGreens()}`;
+    $herb.textContent = h;
+    $carn.textContent = c;
+    $plant.textContent = countGreens();
     $tick.textContent = `t: ${simTime.toFixed(1)}s`;
     // Reloj 24h del día simulado
     const dayT = (worldTime % DAY_LENGTH_SEC) / DAY_LENGTH_SEC; // 0..1
