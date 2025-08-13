@@ -1,7 +1,11 @@
 export function initMainMenu(state){
   const root = document.getElementById('mainMenu');
   if(!root) return;
-
+  const logo = document.createElement('img');
+  logo.id = 'mainMenuLogo';
+  logo.src = 'public/images/logo.png';
+  root.appendChild(logo);
+ 
   const buttons = [
     { label: 'Jugar', action: 'play' },
     { label: 'Opciones', action: 'options' },
