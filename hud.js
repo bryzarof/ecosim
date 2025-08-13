@@ -40,6 +40,36 @@ export function initHUD(state) {
   carn.appendChild(carnCount);
   hud.appendChild(carn);
 
+  const rodent = document.createElement('span');
+  rodent.className = 'stat';
+  rodent.title = 'Roedores';
+  rodent.appendChild(document.createTextNode('🐀 '));
+  const rodentCount = document.createElement('span');
+  rodentCount.id = 'rodentCount';
+  rodentCount.textContent = '0';
+  rodent.appendChild(rodentCount);
+  hud.appendChild(rodent);
+
+  const wolf = document.createElement('span');
+  wolf.className = 'stat';
+  wolf.title = 'Lobos';
+  wolf.appendChild(document.createTextNode('🐺 '));
+  const wolfCount = document.createElement('span');
+  wolfCount.id = 'wolfCount';
+  wolfCount.textContent = '0';
+  wolf.appendChild(wolfCount);
+  hud.appendChild(wolf);
+
+  const pollinator = document.createElement('span');
+  pollinator.className = 'stat';
+  pollinator.title = 'Polinizadores';
+  pollinator.appendChild(document.createTextNode('🐝 '));
+  const pollinatorCount = document.createElement('span');
+  pollinatorCount.id = 'pollinatorCount';
+  pollinatorCount.textContent = '0';
+  pollinator.appendChild(pollinatorCount);
+  hud.appendChild(pollinator);
+
   const plant = document.createElement('span');
   plant.className = 'stat';
   plant.title = 'Plantas densas';
@@ -59,7 +89,7 @@ export function initHUD(state) {
     }
   });
 
-  state.hud = { playBtn, clock, weather, herbCount, carnCount, plantCount };
+  state.hud = { playBtn, clock, weather, herbCount, carnCount, plantCount, rodentCount, wolfCount, pollinatorCount };
   state.hudPrevWeather = -1;
 }
 
@@ -69,12 +99,18 @@ export function updateHUD(state) {
 
   const herb = state.animals.filter(a => a.sp === 'HERB').length;
   const carn = state.animals.filter(a => a.sp === 'CARN').length;
+  const rodent = state.animals.filter(a => a.sp === 'RODENT').length;
+  const wolf = state.animals.filter(a => a.sp === 'WOLF').length;
+  const pollinator = state.animals.filter(a => a.sp === 'POLLINATOR').length;
   let plants = 0;
   for (let i = 0; i < state.terrain.length; i++) {
     if (state.terrain[i] === state.BIOME.GRASS && state.plant[i] > 0.33) plants++;
   }
   hud.herbCount.textContent = herb;
   hud.carnCount.textContent = carn;
+  hud.rodentCount.textContent = rodent;
+  hud.wolfCount.textContent = wolf;
+  hud.pollinatorCount.textContent = pollinator;
   hud.plantCount.textContent = plants;
 
   const dayT = (state.worldTime % state.DAY_LENGTH_SEC) / state.DAY_LENGTH_SEC;
