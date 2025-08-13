@@ -87,8 +87,8 @@ function resizeCanvas() {
   const worldPxW = WORLD_W * TILE;
   const worldPxH = WORLD_H * TILE;
   const vp = window.visualViewport;
-  const vw = vp ? vp.width : document.documentElement.clientWidth;
-  const vh = vp ? vp.height : document.documentElement.clientHeight;
+  const vw = vp?.width ?? window.innerWidth;
+  const vh = vp?.height ?? window.innerHeight;
   const scale = Math.min(vw / worldPxW, vh / worldPxH, 1);
 
   // Ajusta el tamaño visible del lienzo respetando la relación de aspecto
