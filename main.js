@@ -86,7 +86,7 @@ function resizeCanvas() {
   // Calcula escala para ajustar la simulación al tamaño de la ventana
   const worldPxW = WORLD_W * TILE;
   const worldPxH = WORLD_H * TILE;
-  const scale = Math.min(window.innerWidth / worldPxW, window.innerHeight / worldPxH, 1);
+  const scale = Math.min(window.innerWidth / worldPxW, window.innerHeight / worldPxH);
 
   // Ajusta el tamaño visible del lienzo respetando la relación de aspecto
   const cssW = worldPxW * scale;
