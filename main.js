@@ -4,6 +4,7 @@ import { render } from './render.js';
 import { setupUI, setTool, applyActionAt } from './ui.js';
 import { sprites } from './sprites.js';
 import { initHUD, updateHUD } from './hud.js';
+import { initSidebar } from './sidebar.js';
 // ==============================================================
 //                    PARÁMETROS DEL MUNDO
 // ==============================================================
@@ -540,6 +541,7 @@ const TOOL = { INSPECT:'inspect', ADD_HERB:'add_herb', ADD_CARN:'add_carn', ERAS
 
 // Toolbar DOM
 const toolbar = document.getElementById('toolbar');
+const sidebar = document.getElementById('sidebar');
 
 // Atajos y entrada gestionados en ui.js
 
@@ -610,7 +612,7 @@ const state = {
   nearestOfSpecies, moveCreature, clampInside,
   eatPlant, reproduce, dist2, daylightFactor,
   triggerFireCenter, strikeMeteor, plague,
-  toolbar, cvs, ctx,
+  toolbar, sidebar, cvs, ctx,
   sprites,
   crowdSmall, crowdMedium, crowdLarge,
   CROWD_THRESH, CROWD_DECAY, SMALL_LIMIT, LARGE_LIMIT,
@@ -660,6 +662,7 @@ function loop(now){
 // ==============================================================
 setupUI(state);
 initHUD(state);
+initSidebar(state);
 generateTerrain();                 // Crea el mapa base
 generateSoilMoisture();            // Inicializa humedad del suelo
 spawnAnimals();                    // Población inicial
