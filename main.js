@@ -3,6 +3,7 @@ import { step } from './physics.js';
 import { render } from './render.js';
 import { setupUI, setTool, applyActionAt } from './ui.js';
 import { sprites } from './sprites.js';
+import { initHUD, updateHUD } from './hud.js';
 // ==============================================================
 //                    PARÁMETROS DEL MUNDO
 // ==============================================================
@@ -599,7 +600,7 @@ const state = {
   set flashTimer(v){ flashTimer = v; },
   get fire(){ return fire; },
   set fire(v){ fire = v; },
-  TILE, WORLD_W, WORLD_H,
+  TILE, WORLD_W, WORLD_H, DAY_LENGTH_SEC,
   animals, plant, terrain, soilMoisture,
   speciesConfig,
   spawnEnabled, hiddenSpecies,
@@ -616,7 +617,9 @@ const state = {
   terrainCanvas:null,
   redrawTerrain:true,
   grid, GRID_SIZE, GRID_W, GRID_H, cellIndex,
-  activeTool: TOOL.INSPECT
+  activeTool: TOOL.INSPECT,
+  hud:null,
+  paused:false
 };
 
 // ==============================================================
@@ -624,24 +627,15 @@ const state = {
 // ==============================================================
 let frames=0, fps=0, fpsTime=0; // Medición de FPS a 0.5s
 const $fps = document.getElementById('fps');
-const $herb = document.getElementById('herbCount');
-const $carn = document.getElementById('carnCount');
-const $plant = document.getElementById('plantCount');
 const $tick = document.getElementById('tick');
-const $clock = document.getElementById('clock');
-const $weather = document.getElementById('weather');
 if (!$fps) console.error('Missing DOM element: #fps');
-if (!$herb) console.error('Missing DOM element: #herbCount');
-if (!$carn) console.error('Missing DOM element: #carnCount');
-if (!$plant) console.error('Missing DOM element: #plantCount');
 if (!$tick) console.error('Missing DOM element: #tick');
-if (!$clock) console.error('Missing DOM element: #clock');
-if (!$weather) console.error('Missing DOM element: #weather');
 const debugPanel = document.getElementById('debugPanel');
 document.getElementById('debugBtn').addEventListener('click', () => debugPanel.classList.toggle('hidden'));
 window.addEventListener('keydown', e=>{ if(e.key==='d' || e.key==='D') debugPanel.classList.toggle('hidden'); });
 
 function loop(now){
+  if (state.paused){ last = now; requestAnimationFrame(loop); return; }
   const dt = Math.min(0.05, (now - last)/1000); // Delta tiempo con tope (50ms) para estabilidad
   last = now;
 
@@ -653,33 +647,19 @@ function loop(now){
   if (fpsTime >= 0.5){
     fps = Math.round(frames / fpsTime);
     frames = 0; fpsTime = 0;
-    const h = animals.filter(a=>a.sp==='HERB').length;
-    const c = animals.filter(a=>a.sp==='CARN').length;
     if ($fps) $fps.textContent = `FPS: ${fps}`;
-    if ($herb) $herb.textContent = h;
-    if ($carn) $carn.textContent = c;
-    if ($plant) $plant.textContent = countGreens();
     if ($tick) $tick.textContent = `t: ${simTime.toFixed(1)}s`;
-    // Reloj 24h del día simulado
-    const dayT = (worldTime % DAY_LENGTH_SEC) / DAY_LENGTH_SEC; // 0..1
-    const hours = Math.floor(dayT * 24);
-    const mins = Math.floor((dayT * 24 - hours) * 60);
-    if ($clock) $clock.textContent = `Hora: ${String(hours).padStart(2,'0')}:${String(mins).padStart(2,'0')}`;
-    if ($weather) $weather.textContent = `Clima: ${WEATHER_NAMES[weatherState]}`;
+    updateHUD(state);
   }
 
   requestAnimationFrame(loop); // Agenda el próximo frame
-}
-
-function countGreens(){
-  // Cuenta tiles de GRASS con densidad de planta > 0.33 (para UI)
-  let c=0; for(let i=0;i<terrain.length;i++){ if (terrain[i]===BIOME.GRASS && plant[i]>0.33) c++; } return c;
 }
 
 // ==============================================================
 //                           INIT
 // ==============================================================
 setupUI(state);
+initHUD(state);
 generateTerrain();                 // Crea el mapa base
 generateSoilMoisture();            // Inicializa humedad del suelo
 spawnAnimals();                    // Población inicial
