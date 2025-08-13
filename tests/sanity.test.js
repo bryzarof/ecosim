@@ -21,7 +21,14 @@ function createTestState(count = 300) {
   const soilMoisture = new Float32Array(total).fill(0.5);
   const terrain = new Uint8Array(total);
   const animals = [];
-  const species = ['HERB', 'CARN', 'RODENT'];
+  const speciesConfig = {
+    HERB: { hungerRate: 0, vision: 5, size: 'medium', reproThreshold: 2, reproCost: 1, reproCooldown: 1 },
+    CARN: { hungerRate: 0, vision: 5, size: 'medium', reproThreshold: 2, reproCost: 1, reproCooldown: 1 },
+    RODENT: { hungerRate: 0, vision: 5, size: 'small', reproThreshold: 2, reproCost: 1, reproCooldown: 1 },
+    WOLF: { hungerRate: 0, vision: 5, size: 'medium', reproThreshold: 2, reproCost: 1, reproCooldown: 1 },
+    POLLINATOR: { hungerRate: 0, vision: 5, size: 'small', reproThreshold: 2, reproCost: 1, reproCooldown: 1 },
+  };
+  const species = Object.keys(speciesConfig);
   for (let i = 0; i < count; i++) {
     const sp = species[i % species.length];
     animals.push({
@@ -52,16 +59,12 @@ function createTestState(count = 300) {
     plant,
     terrain,
     soilMoisture,
-    speciesConfig: {
-      HERB: { hungerRate: 0, vision: 5, size: 'medium', reproThreshold: 2, reproCost: 1, reproCooldown: 1 },
-      CARN: { hungerRate: 0, vision: 5, size: 'medium', reproThreshold: 2, reproCost: 1, reproCooldown: 1 },
-      RODENT: { hungerRate: 0, vision: 5, size: 'small', reproThreshold: 2, reproCost: 1, reproCooldown: 1 },
-    },
-    spawnEnabled: { HERB: false, CARN: false, RODENT: false },
-    hiddenSpecies: { HERB: false, CARN: false, RODENT: false },
-    spawnRate: { HERB: 0, CARN: 0, RODENT: 0 },
-    reproThresholdMul: { HERB: 1, CARN: 1, RODENT: 1 },
-    mortalityMul: { HERB: 1, CARN: 1, RODENT: 1 },
+    speciesConfig,
+    spawnEnabled: Object.fromEntries(species.map(s => [s, false])),
+    hiddenSpecies: Object.fromEntries(species.map(s => [s, false])),
+    spawnRate: Object.fromEntries(species.map(s => [s, 0])),
+    reproThresholdMul: Object.fromEntries(species.map(s => [s, 1])),
+    mortalityMul: Object.fromEntries(species.map(s => [s, 1])),
     CROWD_DECAY: 0.6,
     SMALL_LIMIT: 0.3,
     LARGE_LIMIT: 0.36,
@@ -124,10 +127,11 @@ test('soilMoisture and plant arrays share dimensions and stay within [0,1]', () 
 
 test('population counts remain within reasonable bounds', () => {
   const state = createTestState();
-  const initial = Object.fromEntries(['HERB','CARN','RODENT'].map(s => [s, state.animals.filter(a=>a.sp===s).length]));
+  const species = Object.keys(state.speciesConfig);
+  const initial = Object.fromEntries(species.map(s => [s, state.animals.filter(a => a.sp === s).length]));
   simulateMinutes(state, 5);
-  const finalCounts = Object.fromEntries(['HERB','CARN','RODENT'].map(s => [s, state.animals.filter(a=>a.sp===s).length]));
-  for (const sp of Object.keys(initial)) {
+  const finalCounts = Object.fromEntries(species.map(s => [s, state.animals.filter(a => a.sp === s).length]));
+  for (const sp of species) {
     const min = initial[sp] * 0.5;
     const max = initial[sp] * 1.5;
     expect(finalCounts[sp]).toBeGreaterThanOrEqual(min);
