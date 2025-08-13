@@ -17,7 +17,8 @@ import {
   GRID_SIZE, GRID_W, GRID_H, cellIndex, grid,
   idx, clamp, speciesConfig
 } from './src/worldConfig.js';
-import { generateTerrain, generateSoilMoisture, seededRandom } from './src/terrain.js';
+import { generateTerrain, generateSoilMoisture } from './src/terrain.js';
+import { seededRandom } from './src/utils/noise.js';
 import {
   getWorldTime, setWorldTime,
   getSimTime, setSimTime,
