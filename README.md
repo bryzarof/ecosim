@@ -17,3 +17,14 @@ Para generar la versión de producción:
 ```
 npm run build
 ```
+
+## Menú radial
+
+`initRadialMenu` devuelve una función `destroy` que remueve los listeners añadidos.
+Esto permite montar y desmontar el menú de forma dinámica sin pérdidas de memoria.
+
+```js
+const destroy = initRadialMenu('#radialMenu', opciones);
+// ... al desmontar el menú
+destroy();
+```
