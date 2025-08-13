@@ -83,19 +83,29 @@ const cvs = document.getElementById('sim');
 const ctx = cvs.getContext('2d', { alpha:false });
 
 function resizeCanvas() {
-  // Calcula tamaño CSS y backing-store respetando DPR para nitidez
-  const cssW = WORLD_W * TILE;
-  const cssH = WORLD_H * TILE;
+  // Calcula escala para ajustar la simulación al tamaño de la ventana
+  const worldPxW = WORLD_W * TILE;
+  const worldPxH = WORLD_H * TILE;
+  const vp = window.visualViewport;
+  const vw = vp?.width ?? window.innerWidth;
+  const vh = vp?.height ?? window.innerHeight;
+  const scale = Math.min(vw / worldPxW, vh / worldPxH, 1);
+
+  // Ajusta el tamaño visible del lienzo respetando la relación de aspecto
+  const cssW = worldPxW * scale;
+  const cssH = worldPxH * scale;
   cvs.style.width = cssW + 'px';
   cvs.style.height = cssH + 'px';
-  // Escala el buffer interno según DPR para evitar borrosidad
-  cvs.width = Math.floor(cssW * DPR);
-  cvs.height = Math.floor(cssH * DPR);
+
+  // Mantiene el buffer interno a resolución completa para nitidez y escala vía CSS
+  cvs.width = Math.floor(worldPxW * DPR);
+  cvs.height = Math.floor(worldPxH * DPR);
   ctx.imageSmoothingEnabled = false;           // Look pixel-art
-  ctx.setTransform(DPR, 0, 0, DPR, 0, 0);      // Mapea 1 unidad lógica = 1 px CSS
+  ctx.setTransform(DPR, 0, 0, DPR, 0, 0);      // 1 unidad lógica = 1 px del mundo
 }
 resizeCanvas();
 window.addEventListener('resize', resizeCanvas);
+window.visualViewport?.addEventListener('resize', resizeCanvas);
 
 // ==============================================================
 //                    RUIDO / MAPA DE ALTURA
@@ -497,6 +507,13 @@ const $plant = document.getElementById('plantCount');
 const $tick = document.getElementById('tick');
 const $clock = document.getElementById('clock');
 const $weather = document.getElementById('weather');
+if (!$fps) console.error('Missing DOM element: #fps');
+if (!$herb) console.error('Missing DOM element: #herbCount');
+if (!$carn) console.error('Missing DOM element: #carnCount');
+if (!$plant) console.error('Missing DOM element: #plantCount');
+if (!$tick) console.error('Missing DOM element: #tick');
+if (!$clock) console.error('Missing DOM element: #clock');
+if (!$weather) console.error('Missing DOM element: #weather');
 const debugPanel = document.getElementById('debugPanel');
 document.getElementById('debugBtn').addEventListener('click', () => debugPanel.classList.toggle('hidden'));
 window.addEventListener('keydown', e=>{ if(e.key==='d' || e.key==='D') debugPanel.classList.toggle('hidden'); });
@@ -515,17 +532,17 @@ function loop(now){
     frames = 0; fpsTime = 0;
     const h = animals.filter(a=>a.sp===SPECIES.HERB).length;
     const c = animals.filter(a=>a.sp===SPECIES.CARN).length;
-    $fps.textContent = `FPS: ${fps}`;
-    $herb.textContent = h;
-    $carn.textContent = c;
-    $plant.textContent = countGreens();
-    $tick.textContent = `t: ${simTime.toFixed(1)}s`;
+    if ($fps) $fps.textContent = `FPS: ${fps}`;
+    if ($herb) $herb.textContent = h;
+    if ($carn) $carn.textContent = c;
+    if ($plant) $plant.textContent = countGreens();
+    if ($tick) $tick.textContent = `t: ${simTime.toFixed(1)}s`;
     // Reloj 24h del día simulado
     const dayT = (worldTime % DAY_LENGTH_SEC) / DAY_LENGTH_SEC; // 0..1
     const hours = Math.floor(dayT * 24);
     const mins = Math.floor((dayT * 24 - hours) * 60);
-    $clock.textContent = `Hora: ${String(hours).padStart(2,'0')}:${String(mins).padStart(2,'0')}`;
-    $weather.textContent = `Clima: ${WEATHER_NAMES[weatherState]}`;
+    if ($clock) $clock.textContent = `Hora: ${String(hours).padStart(2,'0')}:${String(mins).padStart(2,'0')}`;
+    if ($weather) $weather.textContent = `Clima: ${WEATHER_NAMES[weatherState]}`;
   }
 
   requestAnimationFrame(loop); // Agenda el próximo frame
