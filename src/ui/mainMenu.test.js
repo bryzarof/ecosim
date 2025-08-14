@@ -24,6 +24,9 @@ test('initMainMenu pauses until play is clicked', () => {
   expect(root.classList.contains('show')).toBe(true);
   expect(state.paused).toBe(true);
 
+   const logo = root.querySelector('#mainMenuLogo');
+  expect(logo).not.toBeNull();
+
   const playBtn = root.querySelector('button[data-action="play"]');
   playBtn.click();
 
