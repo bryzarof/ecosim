@@ -28,6 +28,8 @@ import {
 } from './src/weather.js';
 import { runSelfTests } from './src/selfTests.js';
 
+const IS_DEV = process.env.NODE_ENV !== 'production';
+
 let state;
 
 const speciesList = Object.keys(speciesConfig);
@@ -477,4 +479,6 @@ gsap.to('#evtFire', { rotation:-10, yoyo:true, repeat:-1, duration:0.6, transfor
 gsap.to('#evtMeteor', { y:-4, yoyo:true, repeat:-1, duration:0.8 });
 gsap.to('#evtPlagueH, #evtPlagueC', { scale:1.1, yoyo:true, repeat:-1, duration:1 });
 
-runSelfTests(state, applyActionAt, TOOL, defaultGenes);
+if (IS_DEV) {
+  runSelfTests(state, applyActionAt, TOOL, defaultGenes);
+}
